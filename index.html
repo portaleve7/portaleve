@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portaleve — Descubra se você está pagando juros acima da média</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #7AAF4E;
+    --green-light: #8FC45E;
+    --green-dim: rgba(122,175,78,0.12);
+    --green-border: rgba(122,175,78,0.22);
+    --bg: #1E1F1C;
+    --bg2: #252620;
+    --bg3: #2C2D27;
+    --bg4: #323328;
+    --line: rgba(255,255,255,0.06);
+    --gray: #6E6F68;
+    --gray-mid: #9A9B93;
+    --gray-light: #C4C5BC;
+    --white: #EEEEE9;
+    --red: #C0392B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--white);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 16px 48px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(30,31,28,0.93);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .logo { font-weight: 800; font-size: 20px; color: var(--white); letter-spacing: -0.3px; }
+  .logo span { color: var(--green-light); }
+
+  .nav-cta {
+    background: var(--green); color: var(--white);
+    padding: 10px 22px; border-radius: 6px;
+    font-weight: 700; font-size: 14px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-cta:hover { background: var(--green-light); }
+
+  .hero {
+    min-height: 100vh; display: flex; align-items: center;
+    padding: 120px 48px 80px;
+  }
+
+  .hero-grid {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 64px; align-items: center; width: 100%;
+  }
+
+  .ai-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--green-dim); border: 1px solid var(--green-border);
+    border-radius: 4px; padding: 5px 12px;
+    font-size: 11px; font-weight: 700; color: var(--green-light);
+    margin-bottom: 24px; letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  .ai-dot {
+    width: 6px; height: 6px; background: var(--green-light);
+    border-radius: 50%; animation: blink 1.8s ease-in-out infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+  .hero h1 {
+    font-size: clamp(32px, 3.8vw, 52px); font-weight: 800;
+    line-height: 1.12; letter-spacing: -1px; margin-bottom: 18px;
+  }
+
+  .hero h1 em { font-style: normal; color: var(--green-light); }
+
+  .hero-sub {
+    font-size: 17px; color: var(--gray-light);
+    line-height: 1.6; margin-bottom: 28px; max-width: 460px;
+  }
+
+  .hero-checks { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+
+  .check { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--gray-light); }
+  .check-mark { color: var(--green-light); font-weight: 700; font-size: 13px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--green); color: var(--white);
+    padding: 16px 30px; border-radius: 6px;
+    font-weight: 700; font-size: 16px; text-decoration: none;
+    transition: all 0.2s; border: none; cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.2px;
+  }
+
+  .btn:hover { background: var(--green-light); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(122,175,78,0.2); }
+  .btn-lg { padding: 18px 36px; font-size: 17px; width: 100%; justify-content: center; border-radius: 8px; }
+
+  .terminal { background: var(--bg2); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+
+  .t-bar {
+    background: var(--bg3); padding: 11px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .t-dots { display: flex; gap: 6px; }
+  .t-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .td-r{background:#FF5F56} .td-y{background:#FFBD2E} .td-g{background:#27C93F}
+  .t-title { font-size: 12px; color: var(--gray); flex: 1; text-align: center; letter-spacing: 0.3px; }
+
+  .t-body { padding: 22px; }
+  .t-line { font-size: 13px; margin-bottom: 9px; display: flex; gap: 8px; line-height: 1.5; }
+  .t-p { color: var(--green); font-weight: 700; flex-shrink: 0; }
+  .t-tx { color: var(--gray-mid); }
+  .t-v { color: var(--white); font-weight: 600; }
+  .t-bad { color: #E05252; font-weight: 700; }
+  .t-ok { color: var(--green-light); font-weight: 700; }
+  .t-sep { height: 1px; background: var(--line); margin: 14px 0; }
+
+  .t-result {
+    background: var(--green-dim); border: 1px solid var(--green-border);
+    border-radius: 8px; padding: 16px; margin-top: 14px;
+  }
+  .t-r-label { font-size: 11px; color: var(--green-light); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-bottom: 6px; }
+  .t-r-value { font-size: 28px; font-weight: 800; color: var(--green-light); letter-spacing: -0.8px; }
+  .t-r-sub { font-size: 12px; color: var(--gray-mid); margin-top: 3px; }
+  .t-cursor { display: inline-block; width: 7px; height: 16px; background: var(--green-light); animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 2px; border-radius: 1px; }
+
+  .stats-band { background: var(--bg2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .stats-band-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(3,1fr); }
+
+  .stat-cell { padding: 36px 32px; text-align: center; border-right: 1px solid var(--line); }
+  .stat-cell:last-child { border-right: none; }
+  .stat-n { font-size: 40px; font-weight: 800; color: var(--green-light); letter-spacing: -1.5px; margin-bottom: 6px; }
+  .stat-l { font-size: 13px; color: var(--gray-mid); line-height: 1.4; max-width: 200px; margin: 0 auto; }
+
+  .section { padding: 88px 48px; }
+  .section-alt { background: var(--bg2); }
+  .inner { max-width: 1100px; margin: 0 auto; }
+
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--green-light); border-left: 2px solid var(--green); padding-left: 10px; margin-bottom: 14px; }
+  .sh2 { font-size: clamp(24px, 2.8vw, 36px); font-weight: 800; letter-spacing: -0.6px; line-height: 1.15; margin-bottom: 14px; }
+  .sp { font-size: 16px; color: var(--gray-light); line-height: 1.65; }
+
+  .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-top: 40px; }
+  .step { background: var(--bg2); padding: 32px 28px; }
+  .step-num { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+  .step-emoji { font-size: 26px; margin-bottom: 12px; display: block; }
+  .step h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
+  .step p { font-size: 14px; color: var(--gray-mid); line-height: 1.6; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+
+  .why-pts { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
+  .why-pt { display: flex; gap: 14px; padding: 16px 18px; background: var(--bg3); border-radius: 8px; border: 1px solid var(--line); transition: border-color 0.2s; }
+  .why-pt:hover { border-color: var(--green-border); }
+  .why-pt-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .why-pt h4 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .why-pt p { font-size: 13px; color: var(--gray-mid); line-height: 1.5; }
+
+  .ex-card { background: var(--bg3); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .ex-head { background: var(--bg4); padding: 13px 22px; font-size: 12px; font-weight: 600; color: var(--gray-mid); text-transform: uppercase; letter-spacing: 0.6px; border-bottom: 1px solid var(--line); }
+  .ex-body { padding: 22px; }
+  .ex-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .ex-row:last-of-type { border-bottom: none; }
+  .ex-label { font-size: 13px; color: var(--gray-mid); }
+  .ex-vals { display: flex; align-items: center; gap: 8px; }
+  .ex-b { font-size: 15px; font-weight: 700; color: #E05252; }
+  .ex-arrow { color: var(--gray); font-size: 12px; }
+  .ex-a { font-size: 15px; font-weight: 700; color: var(--green-light); }
+  .ex-saving { margin-top: 18px; background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 8px; padding: 20px; text-align: center; }
+  .ex-s-label { font-size: 12px; color: var(--gray-mid); margin-bottom: 6px; }
+  .ex-s-value { font-size: 32px; font-weight: 800; color: var(--green-light); letter-spacing: -1px; }
+  .ex-s-sub { font-size: 12px; color: var(--gray-mid); margin-top: 4px; }
+
+  .ai-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-top: 40px; }
+  .ai-card { background: var(--bg3); padding: 28px 24px; transition: background 0.2s; }
+  .ai-card:hover { background: var(--bg4); }
+  .ai-card-icon { font-size: 24px; margin-bottom: 12px; display: block; }
+  .ai-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.2px; }
+  .ai-card p { font-size: 13px; color: var(--gray-mid); line-height: 1.6; }
+
+  .banks { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0; justify-content: center; }
+  .bank { background: var(--bg3); border: 1px solid var(--line); border-radius: 8px; padding: 10px 18px; font-size: 13px; font-weight: 600; color: var(--gray-light); transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
+  .bank:hover { border-color: var(--green-border); color: var(--green-light); }
+  .bank-logo { width: 26px; height: 26px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .bl-itau    { background: #EC7000; }
+  .bl-pan     { background: #1A6FD4; }
+  .bl-c6      { background: #1a1a1a; border: 1px solid rgba(255,255,255,0.15); }
+  .bl-meutudo { background: #E91E8C; }
+  .bl-sant    { background: #CC0000; }
+  .bl-bb      { background: #F9C700; color: #333; }
+  .bl-caixa   { background: #F47920; }
+
+  .trust-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+  .trust-item { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--gray-mid); background: var(--bg3); border: 1px solid var(--line); border-radius: 6px; padding: 8px 14px; }
+
+  .cta-band { background: var(--bg2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 64px 48px; text-align: center; }
+  .cta-band h2 { font-size: clamp(24px,3vw,38px); font-weight: 800; letter-spacing: -0.8px; margin-bottom: 12px; }
+  .cta-band p { font-size: 16px; color: var(--gray-light); margin-bottom: 28px; }
+
+  .form-wrap { max-width: 520px; margin: 0 auto; }
+  .form-card { background: var(--bg2); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; padding: 36px 32px; position: relative; margin-top: 32px; }
+  .form-card::before { content:''; position:absolute; top:0; left:60px; right:60px; height:1px; background:linear-gradient(90deg,transparent,var(--green),transparent); }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--gray-light); margin-bottom: 6px; }
+  .form-input, .form-select { width:100%; background:var(--bg3); border:1px solid rgba(255,255,255,0.07); border-radius:6px; padding:13px 15px; font-size:15px; color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; outline:none; transition:border-color 0.2s; -webkit-appearance:none; }
+  .form-input:focus,.form-select:focus { border-color:var(--green); background:var(--bg4); }
+  .form-input::placeholder { color:var(--gray); font-size:14px; }
+  .form-select option { background:var(--bg3); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .form-privacy { text-align:center; font-size:12px; color:var(--gray); margin-top:14px; line-height:1.5; }
+
+  .faq-list { margin-top:36px; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .faq-item { background:var(--bg3); border-bottom:1px solid var(--line); }
+  .faq-item:last-child { border-bottom:none; }
+  .faq-q { width:100%; background:none; border:none; color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:600; padding:18px 22px; text-align:left; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:16px; transition:color 0.2s; letter-spacing:-0.2px; }
+  .faq-q:hover { color:var(--green-light); }
+  .faq-icon { width:22px; height:22px; border-radius:4px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--gray); flex-shrink:0; }
+  .faq-a { max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+  .faq-a.open { max-height:200px; }
+  .faq-a p { padding:0 22px 18px; font-size:14px; color:var(--gray-mid); line-height:1.7; }
+
+  footer { padding:32px 48px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+  .footer-copy { font-size:13px; color:var(--gray); }
+  .footer-links { display:flex; gap:20px; }
+  .footer-links a { font-size:13px; color:var(--gray); text-decoration:none; transition:color 0.2s; }
+  .footer-links a:hover { color:var(--green-light); }
+
+  @media(max-width:860px){
+    nav{padding:14px 20px}
+    .hero{padding:96px 20px 52px}
+    .hero-grid{grid-template-columns:1fr;gap:28px}
+
+    /* Terminal vira card compacto no mobile */
+    .terminal{display:block}
+    .t-bar{padding:10px 14px}
+    .t-title{font-size:10px}
+    .t-body{padding:16px}
+    .t-line{font-size:11px;margin-bottom:6px}
+    .t-result{padding:12px}
+    .t-r-value{font-size:22px}
+
+    .stats-band-inner{grid-template-columns:1fr}
+    .stat-cell{border-right:none;border-bottom:1px solid var(--line)}
+    .stat-cell:last-child{border-bottom:none}
+    .section{padding:52px 20px}
+    .steps{grid-template-columns:1fr}
+    .two-col{grid-template-columns:1fr;gap:32px}
+    .ai-cards{grid-template-columns:1fr}
+    .banks{justify-content:center}
+    .trust-row{justify-content:center}
+    .cta-band{padding:48px 20px}
+    footer{padding:28px 20px;flex-direction:column;text-align:center}
+    .footer-links{justify-content:center}
+    .form-row{grid-template-columns:1fr !important}
+  }
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  .f{opacity:0;animation:fadeUp 0.55s ease forwards}
+  .d1{animation-delay:0.05s}.d2{animation-delay:0.15s}.d3{animation-delay:0.25s}.d4{animation-delay:0.35s}
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 40px 36px;
+    max-width: 480px;
+    width: 100%;
+    position: relative;
+    transform: translateY(16px);
+    transition: transform 0.25s ease;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,0.06);
+    border: none;
+    border-radius: 6px;
+    color: var(--gray-mid);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.1); }
+
+  .modal-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+    display: block;
+    text-align: center;
+  }
+  .modal-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    margin-bottom: 10px;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .modal-sub {
+    font-size: 14px;
+    color: var(--gray-mid);
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  /* Modal positivo */
+  .modal-positive { border-top: 3px solid var(--green); }
+  .modal-positive .modal-title { color: var(--green-light); }
+
+  /* Modal negativo */
+  .modal-negative { border-top: 3px solid #E05252; }
+  .modal-negative .modal-title { color: #E05252; }
+
+  .modal-rate-box {
+    background: var(--bg3);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .modal-rate-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .modal-rate-row:last-child { border-bottom: none; }
+  .modal-rate-label { color: var(--gray-mid); }
+  .modal-rate-val { font-weight: 700; }
+  .modal-rate-bad { color: #E05252; }
+  .modal-rate-good { color: var(--green-light); }
+
+  .modal-saving-box {
+    background: var(--green-dim);
+    border: 1px solid var(--green-border);
+    border-radius: 10px;
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .modal-saving-label { font-size: 11px; color: var(--gray-mid); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; font-weight: 600; }
+  .modal-saving-value { font-size: 32px; font-weight: 800; color: var(--green-light); letter-spacing: -1px; }
+  .modal-saving-sub { font-size: 12px; color: var(--gray-mid); margin-top: 4px; }
+
+  .modal-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 15px;
+    justify-content: center;
+    border-radius: 8px;
+  }
+  .modal-btn-outline {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    text-align: center;
+    color: var(--gray-mid);
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    margin-top: 10px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .modal-btn-outline:hover { border-color: var(--green-border); color: var(--green-light); }
+
+  .modal-confirm { border-top: 3px solid var(--green); }
+
+  @media(max-width:860px){
+    .modal { padding: 32px 22px; }
+    .modal-title { font-size: 19px; }
+    .modal-saving-value { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Porta<span>leve</span></div>
+  <a href="#form" class="nav-cta">Ver análise gratuita →</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="ai-pill f"><div class="ai-dot"></div>Diagnóstico por IA</div>
+      <h1 class="f d1">Você está pagando juros <em>acima da média</em> no seu Crédito do Trabalhador?</h1>
+      <p class="hero-sub f d2">Se você tem Crédito do Trabalhador, consignado CLT ou novo consignado privado, nossa IA compara sua taxa com o mercado em 2 minutos. Gratuito, sem compromisso.</p>
+      <div class="hero-checks f d3">
+        <div class="check"><span class="check-mark">✓</span> Não somos banco — trabalhamos pelo seu lado</div>
+        <div class="check"><span class="check-mark">✓</span> 100% gratuito, sem pegadinha</div>
+        <div class="check"><span class="check-mark">✓</span> Sem acesso à conta, sem senha</div>
+      </div>
+      <a href="#form" class="btn f d4">Analisar minha taxa agora →</a>
+    </div>
+
+    <div class="terminal f d3">
+      <div class="t-bar">
+        <div class="t-dots"><div class="t-dot td-r"></div><div class="t-dot td-y"></div><div class="t-dot td-g"></div></div>
+        <div class="t-title">portaleve · análise em tempo real</div>
+      </div>
+      <div class="t-body">
+        <div class="t-line"><span class="t-p">›</span><span class="t-tx">Banco: <span class="t-v">Banco Pan</span> · Contrato: <span class="t-v">R$ 12.000 · 36x</span></span></div>
+        <div class="t-line"><span class="t-p">›</span><span class="t-tx">Taxa detectada: <span class="t-bad">4,8% a.m.</span></span></div>
+        <div class="t-sep"></div>
+        <div class="t-line"><span class="t-p">›</span><span class="t-tx">Analisando <span class="t-v">847 contratos</span> similares...</span></div>
+        <div class="t-line"><span class="t-p">›</span><span class="t-tx">Média do mercado: <span class="t-ok">2,9% a.m.</span></span></div>
+        <div class="t-line"><span class="t-p">›</span><span class="t-tx">Diferença: <span class="t-bad">+65% acima da média</span></span></div>
+        <div class="t-result">
+          <div class="t-r-label">💰 Economia potencial</div>
+          <div class="t-r-value">R$ 4.212 <span class="t-cursor"></span></div>
+          <div class="t-r-sub">R$ 117 a menos por mês · 36 meses</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stats-band">
+  <div class="stats-band-inner">
+    <div class="stat-cell"><div class="stat-n">+140%</div><div class="stat-l">Diferença entre as melhores e piores taxas de Crédito do Trabalhador</div></div>
+    <div class="stat-cell"><div class="stat-n">10M+</div><div class="stat-l">Trabalhadores com consignado CLT ativo no Brasil</div></div>
+    <div class="stat-cell"><div class="stat-n">R$4k+</div><div class="stat-l">Economia média para quem reduz a taxa no novo consignado privado</div></div>
+  </div>
+</div>
+
+<section class="section" id="como-funciona">
+  <div class="inner">
+    <div class="tag">Como funciona</div>
+    <h2 class="sh2">3 passos. 2 minutos. Resultado claro.</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">01</div><span class="step-emoji">📋</span><h3>Você informa seus dados</h3><p>Banco, parcela e prazo do seu Crédito do Trabalhador ou consignado CLT. Sem senha, sem acesso à conta.</p></div>
+      <div class="step"><div class="step-num">02</div><span class="step-emoji">🤖</span><h3>Nossa IA analisa o mercado</h3><p>Comparamos sua taxa com dados reais de milhares de contratos de novo consignado privado em tempo real.</p></div>
+      <div class="step"><div class="step-num">03</div><span class="step-emoji">📊</span><h3>Você recebe um diagnóstico</h3><p>Acima ou abaixo da média — e quanto você pode economizar. Sem enrolação.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="inner">
+    <div class="two-col">
+      <div>
+        <div class="tag">Por que importa</div>
+        <h2 class="sh2">Seu banco não vai te avisar quando surgir uma taxa melhor</h2>
+        <div class="why-pts">
+          <div class="why-pt"><div class="why-pt-icon">🏦</div><div><h4>Bancos têm interesse em manter você pagando mais</h4><p>Se você não procurar, eles não vão chamar.</p></div></div>
+          <div class="why-pt"><div class="why-pt-icon">🔍</div><div><h4>O mercado não é transparente</h4><p>Cada banco cobra diferente. Sem comparação, você não sabe se está pagando justo.</p></div></div>
+          <div class="why-pt"><div class="why-pt-icon">💸</div><div><h4>Pequenas diferenças têm grande impacto</h4><p>Menos de 2% ao mês pode ser mais de R$ 4.000 no total do contrato.</p></div></div>
+        </div>
+      </div>
+      <div class="ex-card">
+        <div class="ex-head">🧮 Exemplo real de impacto</div>
+        <div class="ex-body">
+          <div class="ex-row"><span class="ex-label">Empréstimo</span><span style="font-weight:600;font-size:14px">R$ 12.000 · 36 meses</span></div>
+          <div class="ex-row"><span class="ex-label">Taxa mensal</span><div class="ex-vals"><span class="ex-b">4,5%</span><span class="ex-arrow">→</span><span class="ex-a">2,8%</span></div></div>
+          <div class="ex-row"><span class="ex-label">Parcela</span><div class="ex-vals"><span class="ex-b">R$ 488</span><span class="ex-arrow">→</span><span class="ex-a">R$ 371</span></div></div>
+          <div class="ex-saving"><div class="ex-s-label">Economia total no contrato</div><div class="ex-s-value">R$ 4.212</div><div class="ex-s-sub">ou R$ 117 a menos todo mês</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="inner">
+    <div class="tag">Tecnologia</div>
+    <h2 class="sh2">Como nossa IA trabalha <span style="color:var(--green-light)">pelo seu bolso</span></h2>
+    <div class="ai-cards">
+      <div class="ai-card"><span class="ai-card-icon">📡</span><h3>Analisamos milhares de dados</h3><p>Monitoramos as taxas de todas as IFs do mercado de Crédito do Trabalhador continuamente.</p></div>
+      <div class="ai-card"><span class="ai-card-icon">🧠</span><h3>Identificamos padrões por perfil</h3><p>Cruzamos banco, valor e prazo para encontrar quem tem maior potencial de redução no consignado CLT.</p></div>
+      <div class="ai-card"><span class="ai-card-icon">🎯</span><h3>Diagnóstico personalizado</h3><p>Não é genérico. É uma análise do seu contrato de novo consignado privado, com o seu banco.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="inner">
+    <div class="tag">Credibilidade</div>
+    <h2 class="sh2">Monitoramos as principais IFs do mercado de Crédito do Trabalhador</h2>
+    <div class="banks">
+      <div class="bank"><div class="bank-logo bl-itau">I</div>Itaú</div>
+      <div class="bank"><div class="bank-logo bl-pan">P</div>Banco Pan</div>
+      <div class="bank"><div class="bank-logo bl-c6">C6</div>C6 Bank</div>
+      <div class="bank"><div class="bank-logo bl-meutudo">M</div>Meu Tudo</div>
+      <div class="bank"><div class="bank-logo bl-sant">S</div>Santander</div>
+      <div class="bank"><div class="bank-logo bl-bb">BB</div>Banco do Brasil</div>
+      <div class="bank"><div class="bank-logo bl-caixa">CEF</div>Caixa</div>
+    </div>
+    <div class="trust-row">
+      <div class="trust-item">🔒 Dados protegidos pela LGPD</div>
+      <div class="trust-item">🚫 Não somos banco</div>
+      <div class="trust-item">✅ 100% gratuito</div>
+      <div class="trust-item">🛡️ Sem cobrança antecipada</div>
+      <div class="trust-item">⚡ Independente e imparcial</div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-band">
+  <h2>Você pode estar pagando mais do que deveria no seu Crédito do Trabalhador.</h2>
+  <p>Crédito do Trabalhador, consignado CLT ou novo consignado privado — descubra em 2 minutos. Gratuito.</p>
+  <a href="#form" class="btn" style="font-size:16px;padding:16px 32px;display:inline-flex">Analisar minha taxa agora →</a>
+</div>
+
+<section class="section" id="form">
+  <div class="form-wrap">
+    <div style="text-align:center">
+      <div class="tag">Análise gratuita</div>
+      <h2 class="sh2">Descubra sua situação agora</h2>
+      <p class="sp" style="margin-top:8px;max-width:400px;margin-left:auto;margin-right:auto">Nossa IA analisa em minutos. Entramos em contato pelo WhatsApp.</p>
+    </div>
+    <div class="form-card">
+      <form onsubmit="handleSubmit(event)">
+        <div class="form-group"><label class="form-label">Seu nome</label><input type="text" class="form-input" placeholder="Como você se chama?" required></div>
+        <div class="form-group"><label class="form-label">WhatsApp</label><input type="tel" class="form-input" placeholder="(11) 99999-9999" required></div>
+        <div class="form-group">
+          <label class="form-label">Banco do seu Crédito do Trabalhador / consignado CLT</label>
+          <select class="form-input form-select" required>
+            <option value="" disabled selected>Selecione o banco</option>
+            <option>Banco Pan</option><option>C6 Bank</option><option>Meu Tudo</option>
+            <option>Itaú</option><option>Santander</option><option>Banco do Brasil</option>
+            <option>Caixa Econômica Federal</option><option>Outro</option>
+          </select>
+        </div>
+        <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="form-group"><label class="form-label">Valor do empréstimo</label><input type="text" class="form-input" placeholder="Ex: R$ 12.000"></div>
+          <div class="form-group"><label class="form-label">Parcela mensal</label><input type="text" class="form-input" placeholder="Ex: R$ 480"></div>
+          <div class="form-group"><label class="form-label">Nº de parcelas</label><input type="number" class="form-input" placeholder="Ex: 36" min="1" max="96"></div>
+        </div>
+        <button type="submit" class="btn btn-lg" style="margin-top:8px">Ver minha análise gratuita →</button>
+      </form>
+      <p class="form-privacy">🔒 Seus dados são protegidos. Seguimos a LGPD. Sem spam.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="inner" style="max-width:680px">
+    <div class="tag">Dúvidas</div>
+    <h2 class="sh2">Perguntas frequentes</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">É realmente gratuito? Tem alguma cobrança escondida? <div class="faq-icon">+</div></button>
+        <div class="faq-a"><p>Totalmente gratuito. Não cobramos nada para fazer a análise. Se identificarmos uma oportunidade e você quiser avançar, explicamos tudo antes de qualquer passo. Sem surpresas, sem cobrança antecipada.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Vocês são um banco ou corretora? <div class="faq-icon">+</div></button>
+        <div class="faq-a"><p>Não. Somos uma empresa de tecnologia independente, sem vínculo com nenhuma instituição financeira. Por isso conseguimos analisar o mercado de forma imparcial — trabalhamos pelo seu interesse, não pelo do banco.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">O que vocês fazem com meus dados? <div class="faq-icon">+</div></button>
+        <div class="faq-a"><p>Seus dados são usados exclusivamente para realizar a análise e entrar em contato pelo WhatsApp. Nunca vendemos nem compartilhamos suas informações com terceiros. Seguimos a LGPD.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Meu banco pode me prejudicar se eu pedir a portabilidade do Crédito do Trabalhador? <div class="faq-icon">+</div></button>
+        <div class="faq-a"><p>Não. A portabilidade do consignado CLT é um direito garantido pelo Banco Central. Nenhuma instituição pode te penalizar por solicitar. O processo do novo consignado privado é regulado e seguro.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Quanto tempo leva para receber o resultado? <div class="faq-icon">+</div></button>
+        <div class="faq-a"><p>Nossa IA processa sua análise em minutos. Após preencher o formulário, um especialista entra em contato pelo WhatsApp em até 24 horas com o diagnóstico completo.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL CONFIRMAÇÃO -->
+<div class="modal-overlay" id="confirmOverlay" onclick="closeConfirmOutside(event)">
+  <div class="modal modal-confirm" id="confirmBox">
+    <span class="modal-icon">🎯</span>
+    <div class="modal-title" style="color:var(--green-light)">Pode deixar com a gente!</div>
+    <div class="modal-sub">Recebemos sua solicitação. Nossa equipe já está analisando as melhores propostas disponíveis para o seu perfil.<br><br>Entraremos em contato pelo seu WhatsApp em até <strong style="color:var(--white)">24 horas</strong>.</div>
+    <div style="background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:20px;text-align:center">
+      <div style="font-size:11px;color:var(--gray-mid);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;font-weight:600">O que acontece agora</div>
+      <div style="display:flex;flex-direction:column;gap:10px;text-align:left">
+        <div style="display:flex;gap:12px;align-items:flex-start;font-size:13px">
+          <span style="color:var(--green-light);font-weight:700;flex-shrink:0">1.</span>
+          <span style="color:var(--gray-light)">Nossa IA confirma sua taxa e busca as melhores propostas do mercado</span>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;font-size:13px">
+          <span style="color:var(--green-light);font-weight:700;flex-shrink:0">2.</span>
+          <span style="color:var(--gray-light)">Um especialista entra em contato pelo WhatsApp com as opções encontradas</span>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;font-size:13px">
+          <span style="color:var(--green-light);font-weight:700;flex-shrink:0">3.</span>
+          <span style="color:var(--gray-light)">Você decide se quer avançar. Sem pressão, sem compromisso</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn modal-btn" onclick="closeConfirm()">Entendido, aguardo o contato ✓</button>
+  </div>
+</div>
+
+<!-- MODAL RESULTADO -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modalBox">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <span class="modal-icon" id="modalIcon"></span>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div id="modalRateBox"></div>
+    <div id="modalSavingBox"></div>
+    <button class="btn modal-btn" id="modalCta" onclick="handleCta()"></button>
+    <button class="modal-btn-outline" onclick="closeModal()">Fechar</button>
+  </div>
+</div>
+
+<footer>
+  <div class="logo">Porta<span>leve</span></div>
+  <p class="footer-copy">© 2026 Portaleve. Todos os direitos reservados.</p>
+  <div class="footer-links"><a href="#">Privacidade</a><a href="#">Termos</a><a href="#">Contato</a></div>
+</footer>
+
+<script>
+  // ─── FAQ ───────────────────────────────────────────────
+  function toggleFaq(btn) {
+    const a = btn.nextElementSibling;
+    const icon = btn.querySelector('.faq-icon');
+    const open = a.classList.contains('open');
+    document.querySelectorAll('.faq-a').forEach(x => x.classList.remove('open'));
+    document.querySelectorAll('.faq-icon').forEach(x => x.textContent = '+');
+    if (!open) { a.classList.add('open'); icon.textContent = '−'; }
+  }
+
+  // ─── BENCHMARK ─────────────────────────────────────────
+  const MARKET_AVG = 0.029;       // 2,9% a.m.
+  const THRESHOLD  = MARKET_AVG * 1.10; // 3,19% — 10% acima da média
+
+  // ─── CÁLCULO DE TAXA (Newton-Raphson) ──────────────────
+  function calcRate(pv, pmt, n) {
+    if (pv <= 0 || pmt <= 0 || n <= 0) return null;
+    let i = 0.03;
+    for (let iter = 0; iter < 1000; iter++) {
+      const f  = pmt * (1 - Math.pow(1+i, -n)) / i - pv;
+      const df = pmt * (
+        (Math.pow(1+i,-n) * n / (i * (1+i))) -
+        (1 - Math.pow(1+i,-n)) / (i*i)
+      );
+      const i2 = i - f/df;
+      if (Math.abs(i2 - i) < 1e-8) return i2;
+      i = i2;
+    }
+    return i;
+  }
+
+  // ─── ECONOMIA POTENCIAL ────────────────────────────────
+  function calcSaving(pv, pmt, n, targetRate) {
+    const pmtNew = pv * targetRate / (1 - Math.pow(1 + targetRate, -n));
+    const savingMonth = pmt - pmtNew;
+    const savingTotal = savingMonth * n;
+    return { pmtNew, savingMonth, savingTotal };
+  }
+
+  // ─── FORMATA MOEDA ─────────────────────────────────────
+  function fmt(v) {
+    return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL', minimumFractionDigits:0, maximumFractionDigits:0 });
+  }
+
+  // ─── LIMPA NÚMERO (formato pt-BR: 12.000,50) ──────────
+  // ponto = separador de milhar → remove
+  // vírgula = separador decimal → vira ponto
+  function cleanNum(s) {
+    if (!s) return 0;
+    const cleaned = s
+      .replace(/[R$\s]/g, '')   // remove R$, espaços
+      .replace(/\./g, '')        // remove pontos de milhar
+      .replace(',', '.');        // vírgula decimal → ponto
+    return parseFloat(cleaned) || 0;
+  }
+
+  // ─── MODAL RESULTADO ───────────────────────────────────
+  function openModal()  { document.getElementById('modalOverlay').classList.add('open'); }
+  function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+  function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+  // ─── MODAL CONFIRMAÇÃO ─────────────────────────────────
+  function openConfirm()  {
+    closeModal();
+    setTimeout(() => document.getElementById('confirmOverlay').classList.add('open'), 200);
+  }
+  function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
+  function closeConfirmOutside(e) { if (e.target === document.getElementById('confirmOverlay')) closeConfirm(); }
+
+  // Botão CTA do modal resultado → abre confirmação
+  function handleCta() { openConfirm(); }
+
+  // ─── MODAIS DE RESULTADO ───────────────────────────────
+  function showModalPositive(rate) {
+    const box = document.getElementById('modalBox');
+    box.className = 'modal modal-positive';
+    document.getElementById('modalIcon').textContent = '✅';
+    document.getElementById('modalTitle').textContent = 'Boa notícia! Sua taxa está dentro da média.';
+    document.getElementById('modalSub').textContent =
+      'Sua taxa de ' + (rate*100).toFixed(2) + '% a.m. está alinhada com o mercado. Mesmo assim, podemos buscar condições ainda melhores para você.';
+    document.getElementById('modalRateBox').innerHTML = `
+      <div class="modal-rate-box">
+        <div class="modal-rate-row">
+          <span class="modal-rate-label">Sua taxa</span>
+          <span class="modal-rate-val modal-rate-good">${(rate*100).toFixed(2)}% a.m.</span>
+        </div>
+        <div class="modal-rate-row">
+          <span class="modal-rate-label">Média do mercado</span>
+          <span class="modal-rate-val">${(MARKET_AVG*100).toFixed(2)}% a.m.</span>
+        </div>
+      </div>`;
+    document.getElementById('modalSavingBox').innerHTML = '';
+    document.getElementById('modalCta').textContent = 'Quero buscar uma taxa ainda melhor →';
+    openModal();
+  }
+
+  function showModalNegative(rate, pv, pmt, n) {
+    const { pmtNew, savingMonth, savingTotal } = calcSaving(pv, pmt, n, MARKET_AVG);
+    const box = document.getElementById('modalBox');
+    box.className = 'modal modal-negative';
+    document.getElementById('modalIcon').textContent = '⚠️';
+    document.getElementById('modalTitle').textContent = 'Você está pagando acima da média do mercado.';
+    document.getElementById('modalSub').textContent =
+      'Nossa IA identificou que sua taxa está ' + (((rate/MARKET_AVG)-1)*100).toFixed(0) +
+      '% acima da média. Vamos buscar uma proposta melhor para você.';
+    document.getElementById('modalRateBox').innerHTML = `
+      <div class="modal-rate-box">
+        <div class="modal-rate-row">
+          <span class="modal-rate-label">Sua taxa atual</span>
+          <span class="modal-rate-val modal-rate-bad">${(rate*100).toFixed(2)}% a.m.</span>
+        </div>
+        <div class="modal-rate-row">
+          <span class="modal-rate-label">Média do mercado</span>
+          <span class="modal-rate-val modal-rate-good">${(MARKET_AVG*100).toFixed(2)}% a.m.</span>
+        </div>
+        <div class="modal-rate-row">
+          <span class="modal-rate-label">Sua parcela atual</span>
+          <span class="modal-rate-val modal-rate-bad">${fmt(pmt)}/mês</span>
+        </div>
+        <div class="modal-rate-row">
+          <span class="modal-rate-label">Parcela estimada com taxa média</span>
+          <span class="modal-rate-val modal-rate-good">${fmt(pmtNew)}/mês</span>
+        </div>
+      </div>`;
+    document.getElementById('modalSavingBox').innerHTML = `
+      <div class="modal-saving-box">
+        <div class="modal-saving-label">💰 Economia potencial no contrato</div>
+        <div class="modal-saving-value">${fmt(savingTotal)}</div>
+        <div class="modal-saving-sub">ou ${fmt(savingMonth)} a menos por mês</div>
+      </div>`;
+    document.getElementById('modalCta').textContent = 'Quero reduzir minha taxa →';
+    openModal();
+  }
+
+  // ─── SUBMIT ────────────────────────────────────────────
+  function handleSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+
+    const pvInput  = form.querySelector('input[placeholder="Ex: R$ 12.000"]');
+    const pmtInput = form.querySelector('input[placeholder="Ex: R$ 480"]');
+    const nInput   = form.querySelector('input[type="number"]');
+
+    const pv  = cleanNum(pvInput.value);
+    const pmt = cleanNum(pmtInput.value);
+    const n   = parseInt(nInput.value) || 0;
+
+    if (!pv || !pmt || !n) {
+      alert('Por favor, preencha o valor do empréstimo, a parcela mensal e o número de parcelas.');
+      return;
+    }
+    if (pmt * n < pv) {
+      alert('Os valores informados parecem inconsistentes. Verifique se a parcela e o número de parcelas estão corretos.');
+      return;
+    }
+
+    const rate = calcRate(pv, pmt, n);
+
+    if (!rate || rate <= 0 || rate > 0.5) {
+      alert('Não conseguimos calcular sua taxa com os dados informados. Verifique os valores e tente novamente.');
+      return;
+    }
+
+    if (rate > THRESHOLD) {
+      showModalNegative(rate, pv, pmt, n);
+    } else {
+      showModalPositive(rate);
+    }
+  }
+
+  // ─── SMOOTH SCROLL ─────────────────────────────────────
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) t.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>
