@@ -225,6 +225,52 @@
   .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .form-privacy { text-align:center; font-size:12px; color:var(--gray); margin-top:14px; line-height:1.5; }
 
+  /* STEP INDICATOR */
+  .step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    justify-content: center;
+  }
+  .step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    transition: all 0.3s;
+  }
+  .step-dot.active { background: var(--green); width: 24px; border-radius: 4px; }
+  .step-dot.done { background: var(--green-light); opacity: 0.5; }
+
+  .step-label {
+    font-size: 12px;
+    color: var(--gray);
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .step-label strong { color: var(--green-light); }
+
+  /* STEP PANELS */
+  .form-step { transition: all 0.3s ease; }
+  .form-step.hidden { display: none; }
+
+  /* BACK BUTTON */
+  .btn-back {
+    background: none;
+    border: none;
+    color: var(--gray);
+    font-size: 13px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    margin-bottom: 20px;
+    transition: color 0.2s;
+  }
+  .btn-back:hover { color: var(--green-light); }
+
   .faq-list { margin-top:36px; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
   .faq-item { background:var(--bg3); border-bottom:1px solid var(--line); }
   .faq-item:last-child { border-bottom:none; }
@@ -569,12 +615,35 @@
       <p class="sp" style="margin-top:8px;max-width:400px;margin-left:auto;margin-right:auto">Nossa IA analisa em minutos. Entramos em contato pelo WhatsApp.</p>
     </div>
     <div class="form-card">
-      <form onsubmit="handleSubmit(event)">
-        <div class="form-group"><label class="form-label">Seu nome</label><input id="f-nome" type="text" class="form-input" placeholder="Como você se chama?" required></div>
-        <div class="form-group"><label class="form-label">WhatsApp</label><input id="f-whatsapp" type="tel" class="form-input" placeholder="(11) 99999-9999" oninput="maskPhone(this)" maxlength="15" required></div>
+
+      <!-- STEP INDICATOR -->
+      <div class="step-indicator">
+        <div class="step-dot active" id="dot1"></div>
+        <div class="step-dot" id="dot2"></div>
+      </div>
+
+      <!-- ETAPA 1 -->
+      <div class="form-step" id="step1">
+        <div class="step-label">Passo <strong>1 de 2</strong> — Seus dados de contato</div>
+        <div class="form-group">
+          <label class="form-label">Seu nome</label>
+          <input id="f-nome" type="text" class="form-input" placeholder="Como você se chama?" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">WhatsApp</label>
+          <input id="f-whatsapp" type="tel" class="form-input" placeholder="(11) 99999-9999" oninput="maskPhone(this)" maxlength="15" autocomplete="tel">
+        </div>
+        <button type="button" class="btn btn-lg" style="margin-top:8px" onclick="goToStep2()">Continuar →</button>
+        <p class="form-privacy">🔒 Seus dados são protegidos. Seguimos a LGPD. Sem spam.</p>
+      </div>
+
+      <!-- ETAPA 2 -->
+      <div class="form-step hidden" id="step2">
+        <button class="btn-back" onclick="goToStep1()">← Voltar</button>
+        <div class="step-label">Passo <strong>2 de 2</strong> — Dados do seu empréstimo</div>
         <div class="form-group">
           <label class="form-label">Banco do seu Crédito do Trabalhador / consignado CLT</label>
-          <select id="f-banco" class="form-input form-select" required>
+          <select id="f-banco" class="form-input form-select">
             <option value="" disabled selected>Selecione o banco</option>
             <option>Banco Pan</option><option>C6 Bank</option><option>Meu Tudo</option>
             <option>Itaú</option><option>Santander</option><option>Banco do Brasil</option>
@@ -586,9 +655,10 @@
           <div class="form-group"><label class="form-label">Parcela mensal</label><input id="f-parcela" type="text" class="form-input" placeholder="R$ 0" oninput="maskCurrency(this)"></div>
           <div class="form-group"><label class="form-label">Nº de parcelas</label><input id="f-parcelas" type="number" class="form-input" placeholder="Ex: 36" min="1" max="96"></div>
         </div>
-        <button type="submit" class="btn btn-lg" style="margin-top:8px">Ver minha análise gratuita →</button>
-      </form>
-      <p class="form-privacy">🔒 Seus dados são protegidos. Seguimos a LGPD. Sem spam.</p>
+        <button type="button" class="btn btn-lg" style="margin-top:8px" onclick="handleSubmit()">Ver minha análise gratuita →</button>
+        <p class="form-privacy">🔒 Seus dados são protegidos. Seguimos a LGPD. Sem spam.</p>
+      </div>
+
     </div>
   </div>
 </section>
@@ -734,6 +804,31 @@
   // ─── MODAL CONFIRMAÇÃO ─────────────────────────────────
   function openConfirm() {
     closeModal();
+
+    const pv  = cleanNum(document.getElementById('f-valor')?.value || '');
+    const pmt = cleanNum(document.getElementById('f-parcela')?.value || '');
+    const n   = parseInt(document.getElementById('f-parcelas')?.value) || 0;
+    const rate = calcRate(pv, pmt, n);
+
+    const payload = {
+      data:               new Date().toLocaleString('pt-BR'),
+      nome:               document.getElementById('f-nome')?.value || '',
+      whatsapp:           document.getElementById('f-whatsapp')?.value || '',
+      banco:              document.getElementById('f-banco')?.value || '',
+      parcela:            pmt,
+      parcelas_restantes: n,
+      valor_emprestimo:   pv,
+      taxa_calculada:     rate ? (rate * 100).toFixed(2) + '%' : 'N/A',
+      resultado:          rate > THRESHOLD ? 'Acima da média' : 'Dentro da média',
+      etapa:              'Etapa 2 — Análise completa'
+    };
+
+    fetch('https://primary-production-2d2f8.up.railway.app/webhook/portaleve-leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(err => console.error('Webhook error:', err));
+
     setTimeout(() => document.getElementById('confirmOverlay').classList.add('open'), 200);
   }
   function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
@@ -860,6 +955,60 @@
     return true;
   }
 
+  // ─── NAVEGAÇÃO ENTRE ETAPAS ────────────────────────────
+  function goToStep2() {
+    const nome     = document.getElementById('f-nome');
+    const whatsapp = document.getElementById('f-whatsapp');
+
+    clearError(nome);
+    clearError(whatsapp);
+
+    if (!nome.value.trim()) {
+      showError(nome, 'Por favor, informe seu nome.');
+      return;
+    }
+    if (!whatsapp.value.trim() || whatsapp.value.replace(/\D/g,'').length < 10) {
+      showError(whatsapp, 'Informe um WhatsApp válido com DDD. Ex: (11) 99999-9999');
+      return;
+    }
+
+    // Envia etapa 1 para o N8N imediatamente
+    const payload = {
+      data:      new Date().toLocaleString('pt-BR'),
+      nome:      nome.value.trim(),
+      whatsapp:  whatsapp.value.trim(),
+      etapa:     'Etapa 1 — Contato capturado',
+      banco:     '',
+      parcela:   '',
+      parcelas_restantes: '',
+      valor_emprestimo:   '',
+      taxa_calculada:     '',
+      resultado:          'Aguardando etapa 2'
+    };
+
+    fetch('https://primary-production-2d2f8.up.railway.app/webhook/portaleve-leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(err => console.error('Webhook error:', err));
+
+    // Avança para etapa 2
+    document.getElementById('step1').classList.add('hidden');
+    document.getElementById('step2').classList.remove('hidden');
+    document.getElementById('dot1').classList.remove('active');
+    document.getElementById('dot1').classList.add('done');
+    document.getElementById('dot2').classList.add('active');
+    document.getElementById('f-banco').focus();
+  }
+
+  function goToStep1() {
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('step1').classList.remove('hidden');
+    document.getElementById('dot2').classList.remove('active');
+    document.getElementById('dot1').classList.remove('done');
+    document.getElementById('dot1').classList.add('active');
+  }
+
   // ─── ERROS INLINE ──────────────────────────────────────
   function showError(inputEl, msg) {
     clearError(inputEl);
@@ -883,15 +1032,16 @@
     form.querySelectorAll('.field-error').forEach(el => el.remove());
   }
 
-  // ─── SUBMIT ────────────────────────────────────────────
-  function handleSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    clearAllErrors(form);
-
+  // ─── SUBMIT ETAPA 2 ────────────────────────────────────
+  function handleSubmit() {
     const pvEl  = document.getElementById('f-valor');
     const pmtEl = document.getElementById('f-parcela');
     const nEl   = document.getElementById('f-parcelas');
+    const bancoEl = document.getElementById('f-banco');
+
+    clearError(pvEl);
+    clearError(pmtEl);
+    clearError(nEl);
 
     const pv  = cleanNum(pvEl.value);
     const pmt = cleanNum(pmtEl.value);
