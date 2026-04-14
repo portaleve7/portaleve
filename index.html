@@ -718,10 +718,46 @@
   function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
 
   // ─── MODAL CONFIRMAÇÃO ─────────────────────────────────
-  function openConfirm()  {
-    closeModal();
-    setTimeout(() => document.getElementById('confirmOverlay').classList.add('open'), 200);
-  }
+  function openConfirm() {
+  closeModal();
+
+  // Captura os dados do formulário
+  const form = document.querySelector('form');
+  const pvInput  = form.querySelector('input[placeholder="Ex: R$ 12.000"]');
+  const pmtInput = form.querySelector('input[placeholder="Ex: R$ 480"]');
+  const nInput   = form.querySelector('input[type="number"]');
+  const nome     = form.querySelector('input[placeholder="Seu nome completo"]')?.value || '';
+  const whatsapp = form.querySelector('input[placeholder="(11) 99999-9999"]')?.value || '';
+  const cpf      = form.querySelector('input[placeholder="000.000.000-00"]')?.value || '';
+  const banco    = form.querySelector('select')?.value || '';
+
+  const pv  = cleanNum(pvInput?.value || '');
+  const pmt = cleanNum(pmtInput?.value || '');
+  const n   = parseInt(nInput?.value) || 0;
+  const rate = calcRate(pv, pmt, n);
+
+  const payload = {
+    data: new Date().toLocaleString('pt-BR'),
+    nome,
+    whatsapp,
+    cpf,
+    banco,
+    parcela: pmt,
+    parcelas_restantes: n,
+    valor_emprestimo: pv,
+    taxa_calculada: rate ? (rate * 100).toFixed(2) + '%' : 'N/A',
+    resultado: rate > THRESHOLD ? 'Acima da média' : 'Dentro da média'
+  };
+
+  // Envia para o N8N
+  fetch('https://primary-production-2d2f8.up.railway.app/webhook-test/portaleve-leads', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(err => console.error('Webhook error:', err));
+
+  setTimeout(() => document.getElementById('confirmOverlay').classList.add('open'), 200);
+}
   function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
   function closeConfirmOutside(e) { if (e.target === document.getElementById('confirmOverlay')) closeConfirm(); }
 
