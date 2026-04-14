@@ -6,6 +6,23 @@
 <title>Portaleve — Descubra se você está pagando juros acima da média</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1491303015878760');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1491303015878760&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 <style>
   :root {
     --green: #7AAF4E;
@@ -829,6 +846,9 @@
       body: JSON.stringify(payload)
     }).catch(err => console.error('Webhook error:', err));
 
+    // Pixel — rastreia lead completo
+    if (typeof fbq !== 'undefined') fbq('track', 'Lead');
+
     setTimeout(() => document.getElementById('confirmOverlay').classList.add('open'), 200);
   }
   function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
@@ -991,6 +1011,9 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).catch(err => console.error('Webhook error:', err));
+
+    // Pixel — rastreia início do formulário
+    if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout');
 
     // Avança para etapa 2
     document.getElementById('step1').classList.add('hidden');
