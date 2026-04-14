@@ -411,6 +411,20 @@
 
   .modal-confirm { border-top: 3px solid var(--green); }
 
+  /* ERROS INLINE */
+  .field-error {
+    font-size: 12px;
+    color: #E05252;
+    margin-top: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    line-height: 1.4;
+    animation: fadeUp 0.2s ease forwards;
+  }
+  .field-error::before { content: '⚠'; flex-shrink: 0; }
+  .form-input.has-error { border-color: #E05252 !important; }
+
   @media(max-width:860px){
     .modal { padding: 32px 22px; }
     .modal-title { font-size: 19px; }
@@ -557,7 +571,7 @@
     <div class="form-card">
       <form onsubmit="handleSubmit(event)">
         <div class="form-group"><label class="form-label">Seu nome</label><input id="f-nome" type="text" class="form-input" placeholder="Como você se chama?" required></div>
-        <div class="form-group"><label class="form-label">WhatsApp</label><input id="f-whatsapp" type="tel" class="form-input" placeholder="(11) 99999-9999" required></div>
+        <div class="form-group"><label class="form-label">WhatsApp</label><input id="f-whatsapp" type="tel" class="form-input" placeholder="(11) 99999-9999" oninput="maskPhone(this)" maxlength="15" required></div>
         <div class="form-group">
           <label class="form-label">Banco do seu Crédito do Trabalhador / consignado CLT</label>
           <select id="f-banco" class="form-input form-select" required>
@@ -568,8 +582,8 @@
           </select>
         </div>
         <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
-          <div class="form-group"><label class="form-label">Valor do empréstimo</label><input id="f-valor" type="text" class="form-input" placeholder="Ex: R$ 12.000"></div>
-          <div class="form-group"><label class="form-label">Parcela mensal</label><input id="f-parcela" type="text" class="form-input" placeholder="Ex: R$ 480"></div>
+          <div class="form-group"><label class="form-label">Valor do empréstimo</label><input id="f-valor" type="text" class="form-input" placeholder="R$ 0" oninput="maskCurrency(this)"></div>
+          <div class="form-group"><label class="form-label">Parcela mensal</label><input id="f-parcela" type="text" class="form-input" placeholder="R$ 0" oninput="maskCurrency(this)"></div>
           <div class="form-group"><label class="form-label">Nº de parcelas</label><input id="f-parcelas" type="number" class="form-input" placeholder="Ex: 36" min="1" max="96"></div>
         </div>
         <button type="submit" class="btn btn-lg" style="margin-top:8px">Ver minha análise gratuita →</button>
@@ -814,32 +828,131 @@
     openModal();
   }
 
+  // ─── MÁSCARAS ──────────────────────────────────────────
+  function maskPhone(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 11);
+    if (v.length <= 10) {
+      v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    } else {
+      v = v.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+    }
+    el.value = v;
+  }
+
+  function maskCurrency(el) {
+    let v = el.value.replace(/\D/g, '');
+    if (!v) { el.value = ''; return; }
+    const num = parseInt(v, 10);
+    el.value = 'R$ ' + num.toLocaleString('pt-BR');
+  }
+
+  function isValidPhone(phone) {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length < 10 || digits.length > 11) return false;
+    // DDD válido (11-99)
+    const ddd = parseInt(digits.substring(0, 2));
+    if (ddd < 11 || ddd > 99) return false;
+    // Celular com 11 dígitos deve começar com 9
+    if (digits.length === 11 && digits[2] !== '9') return false;
+    // Sequências inválidas
+    if (/^(\d)\1+$/.test(digits)) return false;
+    return true;
+  }
+
+  // ─── ERROS INLINE ──────────────────────────────────────
+  function showError(inputEl, msg) {
+    clearError(inputEl);
+    inputEl.classList.add('has-error');
+    const err = document.createElement('div');
+    err.className = 'field-error';
+    err.textContent = msg;
+    err.dataset.errorFor = inputEl.id;
+    inputEl.parentNode.appendChild(err);
+    inputEl.focus();
+  }
+
+  function clearError(inputEl) {
+    inputEl.classList.remove('has-error');
+    const existing = inputEl.parentNode.querySelector(`[data-error-for="${inputEl.id}"]`);
+    if (existing) existing.remove();
+  }
+
+  function clearAllErrors(form) {
+    form.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
+    form.querySelectorAll('.field-error').forEach(el => el.remove());
+  }
+
   // ─── SUBMIT ────────────────────────────────────────────
   function handleSubmit(e) {
     e.preventDefault();
     const form = e.target;
+    clearAllErrors(form);
 
-    const pvInput  = form.querySelector('input[placeholder="Ex: R$ 12.000"]');
-    const pmtInput = form.querySelector('input[placeholder="Ex: R$ 480"]');
-    const nInput   = form.querySelector('input[type="number"]');
+    const pvEl  = document.getElementById('f-valor');
+    const pmtEl = document.getElementById('f-parcela');
+    const nEl   = document.getElementById('f-parcelas');
 
-    const pv  = cleanNum(pvInput.value);
-    const pmt = cleanNum(pmtInput.value);
-    const n   = parseInt(nInput.value) || 0;
+    const pv  = cleanNum(pvEl.value);
+    const pmt = cleanNum(pmtEl.value);
+    const n   = parseInt(nEl.value) || 0;
 
-    if (!pv || !pmt || !n) {
-      alert('Por favor, preencha o valor do empréstimo, a parcela mensal e o número de parcelas.');
+    // ── Campos vazios
+    if (!pv) {
+      showError(pvEl, 'Informe o valor total do seu empréstimo. Ex: 12000');
       return;
     }
-    if (pmt * n < pv) {
-      alert('Os valores informados parecem inconsistentes. Verifique se a parcela e o número de parcelas estão corretos.');
+    if (!pmt) {
+      showError(pmtEl, 'Informe o valor da sua parcela mensal. Ex: 480');
+      return;
+    }
+    if (!n) {
+      showError(nEl, 'Informe o número de parcelas do contrato. Ex: 36');
+      return;
+    }
+
+    // ── Celular válido
+    const whatsappEl = document.getElementById('f-whatsapp');
+    if (!isValidPhone(whatsappEl.value)) {
+      showError(whatsappEl, 'Informe um número de celular válido com DDD. Ex: (11) 99999-9999');
+      return;
+    }
+
+    // ── Parcela maior que o empréstimo
+    if (pmt >= pv) {
+      showError(pmtEl, `A parcela (${fmt(pmt)}) não pode ser maior que o valor do empréstimo (${fmt(pv)}). Verifique se preencheu os campos corretamente.`);
+      return;
+    }
+
+    // ── Parcela muito baixa — total não cobre o empréstimo
+    const totalPago = pmt * n;
+    if (totalPago < pv) {
+      // Calcula parcela mínima aproximada (sem juros) para dar dica
+      const pmtMinima = Math.ceil(pv / n);
+      showError(pmtEl, `Com ${n} parcelas de ${fmt(pmt)}, o total pago seria ${fmt(totalPago)}, menos que o empréstimo de ${fmt(pv)}. A parcela mínima esperada seria em torno de ${fmt(pmtMinima)}. Verifique o valor da parcela.`);
+      return;
+    }
+
+    // ── Número de parcelas muito baixo
+    if (n < 6) {
+      showError(nEl, 'O Crédito do Trabalhador geralmente tem prazo mínimo de 6 meses. Verifique o número de parcelas no seu contrato.');
+      return;
+    }
+
+    // ── Número de parcelas muito alto
+    if (n > 96) {
+      showError(nEl, 'O prazo máximo do Crédito do Trabalhador é de 96 meses (8 anos). Verifique o número de parcelas no seu contrato.');
       return;
     }
 
     const rate = calcRate(pv, pmt, n);
 
-    if (!rate || rate <= 0 || rate > 0.5) {
-      alert('Não conseguimos calcular sua taxa com os dados informados. Verifique os valores e tente novamente.');
+    // ── Taxa fora do intervalo esperado
+    if (!rate || rate <= 0) {
+      showError(pvEl, 'Não conseguimos calcular sua taxa. Verifique se os valores estão corretos.');
+      return;
+    }
+    if (rate > 0.20) {
+      showError(pmtEl, `A taxa calculada (${(rate*100).toFixed(1)}% a.m.) parece muito alta. Verifique se a parcela e o valor do empréstimo estão corretos.`);
       return;
     }
 
