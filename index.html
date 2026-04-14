@@ -556,11 +556,11 @@
     </div>
     <div class="form-card">
       <form onsubmit="handleSubmit(event)">
-        <div class="form-group"><label class="form-label">Seu nome</label><input type="text" class="form-input" placeholder="Como você se chama?" required></div>
-        <div class="form-group"><label class="form-label">WhatsApp</label><input type="tel" class="form-input" placeholder="(11) 99999-9999" required></div>
+        <div class="form-group"><label class="form-label">Seu nome</label><input id="f-nome" type="text" class="form-input" placeholder="Como você se chama?" required></div>
+        <div class="form-group"><label class="form-label">WhatsApp</label><input id="f-whatsapp" type="tel" class="form-input" placeholder="(11) 99999-9999" required></div>
         <div class="form-group">
           <label class="form-label">Banco do seu Crédito do Trabalhador / consignado CLT</label>
-          <select class="form-input form-select" required>
+          <select id="f-banco" class="form-input form-select" required>
             <option value="" disabled selected>Selecione o banco</option>
             <option>Banco Pan</option><option>C6 Bank</option><option>Meu Tudo</option>
             <option>Itaú</option><option>Santander</option><option>Banco do Brasil</option>
@@ -568,9 +568,9 @@
           </select>
         </div>
         <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
-          <div class="form-group"><label class="form-label">Valor do empréstimo</label><input type="text" class="form-input" placeholder="Ex: R$ 12.000"></div>
-          <div class="form-group"><label class="form-label">Parcela mensal</label><input type="text" class="form-input" placeholder="Ex: R$ 480"></div>
-          <div class="form-group"><label class="form-label">Nº de parcelas</label><input type="number" class="form-input" placeholder="Ex: 36" min="1" max="96"></div>
+          <div class="form-group"><label class="form-label">Valor do empréstimo</label><input id="f-valor" type="text" class="form-input" placeholder="Ex: R$ 12.000"></div>
+          <div class="form-group"><label class="form-label">Parcela mensal</label><input id="f-parcela" type="text" class="form-input" placeholder="Ex: R$ 480"></div>
+          <div class="form-group"><label class="form-label">Nº de parcelas</label><input id="f-parcelas" type="number" class="form-input" placeholder="Ex: 36" min="1" max="96"></div>
         </div>
         <button type="submit" class="btn btn-lg" style="margin-top:8px">Ver minha análise gratuita →</button>
       </form>
@@ -718,46 +718,34 @@
   function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
 
   // ─── MODAL CONFIRMAÇÃO ─────────────────────────────────
-  function openConfirm() {
-  closeModal();
+  function openConfirm()  {
+    closeModal();
 
-  // Captura os dados do formulário
-  const form = document.querySelector('form');
-  const pvInput  = form.querySelector('input[placeholder="Ex: R$ 12.000"]');
-  const pmtInput = form.querySelector('input[placeholder="Ex: R$ 480"]');
-  const nInput   = form.querySelector('input[type="number"]');
-  const nome     = form.querySelector('input[placeholder="Seu nome completo"]')?.value || '';
-  const whatsapp = form.querySelector('input[placeholder="(11) 99999-9999"]')?.value || '';
-  const cpf      = form.querySelector('input[placeholder="000.000.000-00"]')?.value || '';
-  const banco    = form.querySelector('select')?.value || '';
+    const pv  = cleanNum(document.getElementById('f-valor')?.value || '');
+    const pmt = cleanNum(document.getElementById('f-parcela')?.value || '');
+    const n   = parseInt(document.getElementById('f-parcelas')?.value) || 0;
+    const rate = calcRate(pv, pmt, n);
 
-  const pv  = cleanNum(pvInput?.value || '');
-  const pmt = cleanNum(pmtInput?.value || '');
-  const n   = parseInt(nInput?.value) || 0;
-  const rate = calcRate(pv, pmt, n);
+    const payload = {
+      data:               new Date().toLocaleString('pt-BR'),
+      nome:               document.getElementById('f-nome')?.value || '',
+      whatsapp:           document.getElementById('f-whatsapp')?.value || '',
+      banco:              document.getElementById('f-banco')?.value || '',
+      parcela:            pmt,
+      parcelas_restantes: n,
+      valor_emprestimo:   pv,
+      taxa_calculada:     rate ? (rate * 100).toFixed(2) + '%' : 'N/A',
+      resultado:          rate > THRESHOLD ? 'Acima da média' : 'Dentro da média'
+    };
 
-  const payload = {
-    data: new Date().toLocaleString('pt-BR'),
-    nome,
-    whatsapp,
-    cpf,
-    banco,
-    parcela: pmt,
-    parcelas_restantes: n,
-    valor_emprestimo: pv,
-    taxa_calculada: rate ? (rate * 100).toFixed(2) + '%' : 'N/A',
-    resultado: rate > THRESHOLD ? 'Acima da média' : 'Dentro da média'
-  };
+    fetch('https://primary-production-2d2f8.up.railway.app/webhook/portaleve-leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(err => console.error('Webhook error:', err));
 
-  // Envia para o N8N
-  fetch('https://primary-production-2d2f8.up.railway.app/webhook/portaleve-leads', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  }).catch(err => console.error('Webhook error:', err));
-
-  setTimeout(() => document.getElementById('confirmOverlay').classList.add('open'), 200);
-}
+    setTimeout(() => document.getElementById('confirmOverlay').classList.add('open'), 200);
+  }
   function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
   function closeConfirmOutside(e) { if (e.target === document.getElementById('confirmOverlay')) closeConfirm(); }
 
