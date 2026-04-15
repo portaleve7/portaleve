@@ -703,7 +703,7 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Quanto tempo leva para receber o resultado? <div class="faq-icon">+</div></button>
-        <div class="faq-a"><p>Nossa IA processa sua análise em minutos. Após preencher o formulário, um especialista entra em contato pelo WhatsApp em até 24 horas com o diagnóstico completo.</p></div>
+        <div class="faq-a"><p>Nossa IA processa sua análise em instantes. Após preencher o formulário, um especialista da Portaleve entra em contato pelo seu WhatsApp assim que tivermos as melhores opções disponíveis para o seu perfil.</p></div>
       </div>
     </div>
   </div>
@@ -713,8 +713,8 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
 <div class="modal-overlay" id="confirmOverlay" onclick="closeConfirmOutside(event)">
   <div class="modal modal-confirm" id="confirmBox">
     <span class="modal-icon">🎯</span>
-    <div class="modal-title" style="color:var(--green-light)">Pode deixar com a gente!</div>
-    <div class="modal-sub">Recebemos sua solicitação. Nossa equipe já está analisando as melhores propostas disponíveis para o seu perfil.<br><br>Entraremos em contato pelo seu WhatsApp em até <strong style="color:var(--white)">24 horas</strong>.</div>
+    <div class="modal-title" style="color:var(--green-light)" id="confirmTitle">Pode deixar com a gente!</div>
+    <div class="modal-sub" id="confirmSub">Recebemos sua análise e já estamos buscando as melhores propostas disponíveis para o seu perfil.</div>
     <div style="background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:20px;text-align:center">
       <div style="font-size:11px;color:var(--gray-mid);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;font-weight:600">O que acontece agora</div>
       <div style="display:flex;flex-direction:column;gap:10px;text-align:left">
@@ -724,7 +724,7 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
         </div>
         <div style="display:flex;gap:12px;align-items:flex-start;font-size:13px">
           <span style="color:var(--green-light);font-weight:700;flex-shrink:0">2.</span>
-          <span style="color:var(--gray-light)">Um especialista entra em contato pelo WhatsApp com as opções encontradas</span>
+          <span style="color:var(--gray-light)">Um especialista entra em contato pelo seu WhatsApp com as opções encontradas</span>
         </div>
         <div style="display:flex;gap:12px;align-items:flex-start;font-size:13px">
           <span style="color:var(--green-light);font-weight:700;flex-shrink:0">3.</span>
@@ -826,10 +826,20 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
   function openConfirm() {
     closeModal();
 
-    const pv  = cleanNum(document.getElementById('f-valor')?.value || '');
-    const pmt = cleanNum(document.getElementById('f-parcela')?.value || '');
-    const n   = parseInt(document.getElementById('f-parcelas')?.value) || 0;
+    const nome = document.getElementById('f-nome')?.value.trim().split(' ')[0] || '';
+    const pv   = cleanNum(document.getElementById('f-valor')?.value || '');
+    const pmt  = cleanNum(document.getElementById('f-parcela')?.value || '');
+    const n    = parseInt(document.getElementById('f-parcelas')?.value) || 0;
     const rate = calcRate(pv, pmt, n);
+
+    // Personaliza o modal com o nome do cliente
+    const titulo = nome ? `Pode deixar com a gente, ${nome}!` : 'Pode deixar com a gente!';
+    const sub = nome
+      ? `Recebemos sua análise, ${nome}. Já estamos buscando as melhores propostas disponíveis para o seu perfil.`
+      : 'Recebemos sua análise e já estamos buscando as melhores propostas disponíveis para o seu perfil.';
+
+    document.getElementById('confirmTitle').textContent = titulo;
+    document.getElementById('confirmSub').textContent = sub;
 
     const payload = {
       data:               new Date().toLocaleString('pt-BR'),
@@ -850,7 +860,6 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       body: JSON.stringify(payload)
     }).catch(err => console.error('Webhook error:', err));
 
-    // Pixel — rastreia lead completo
     if (typeof fbq !== 'undefined') fbq('track', 'Lead');
 
     setTimeout(() => document.getElementById('confirmOverlay').classList.add('open'), 200);
@@ -888,16 +897,19 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
 
   // ─── MODAIS DE RESULTADO ───────────────────────────────
   function showModalPositive(rate) {
+    const nome = document.getElementById('f-nome')?.value.trim().split(' ')[0] || '';
     const box = document.getElementById('modalBox');
     box.className = 'modal modal-positive';
-    document.getElementById('modalIcon').textContent = '✅';
-    document.getElementById('modalTitle').textContent = 'Boa notícia! Sua taxa está dentro da média.';
+    document.getElementById('modalIcon').textContent = '🎉';
+    document.getElementById('modalTitle').textContent = nome
+      ? `${nome}, sua taxa está dentro da média!`
+      : 'Sua taxa está dentro da média!';
     document.getElementById('modalSub').textContent =
-      'Sua taxa de ' + (rate*100).toFixed(2) + '% a.m. está alinhada com o mercado. Mesmo assim, podemos buscar condições ainda melhores para você.';
+      'Você é um dos poucos trabalhadores com uma taxa justa. Mesmo assim, podemos verificar se existe alguma condição ainda melhor para você no mercado.';
     document.getElementById('modalRateBox').innerHTML = `
       <div class="modal-rate-box">
         <div class="modal-rate-row">
-          <span class="modal-rate-label">Sua taxa</span>
+          <span class="modal-rate-label">Sua taxa estimada</span>
           <span class="modal-rate-val modal-rate-good">${(rate*100).toFixed(2)}% a.m.</span>
         </div>
         <div class="modal-rate-row">
@@ -905,8 +917,13 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
           <span class="modal-rate-val">${(MARKET_AVG*100).toFixed(2)}% a.m.</span>
         </div>
       </div>`;
-    document.getElementById('modalSavingBox').innerHTML = '';
-    document.getElementById('modalCta').textContent = 'Quero buscar uma taxa ainda melhor →';
+    document.getElementById('modalSavingBox').innerHTML = `
+      <div class="modal-saving-box" style="background:var(--green-dim);border-color:var(--green-border)">
+        <div class="modal-saving-label" style="color:var(--green-light)">✅ Situação atual</div>
+        <div style="font-size:16px;color:var(--green-light);font-weight:700;margin-top:4px">Você está bem posicionado</div>
+        <div class="modal-saving-sub">Mas podemos confirmar se existe uma taxa ainda melhor para o seu perfil</div>
+      </div>`;
+    document.getElementById('modalCta').textContent = 'Quero verificar se existe algo melhor →';
     openModal();
   }
 
