@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contato — Portaleve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #7AAF4E;
+    --green-light: #8FC45E;
+    --green-glow: rgba(122,175,78,0.12);
+    --green-border: rgba(122,175,78,0.22);
+    --bg: #1C1C1A;
+    --bg2: #232320;
+    --bg3: #2A2A27;
+    --line: rgba(255,255,255,0.06);
+    --gray: #7A7D74;
+    --gray-light: #C4C8BC;
+    --white: #EDEFEA;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--bg); color:var(--white); line-height:1.7; min-height:100vh; display:flex; flex-direction:column; }
+  nav { padding:20px 48px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); }
+  .logo { font-weight:800; font-size:20px; color:var(--white); text-decoration:none; }
+  .logo span { color:var(--green-light); }
+  .nav-back { font-size:14px; color:var(--gray); text-decoration:none; transition:color 0.2s; }
+  .nav-back:hover { color:var(--green-light); }
+  .container { max-width:600px; margin:0 auto; padding:80px 48px; flex:1; }
+  .page-tag { font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--green-light); font-weight:700; margin-bottom:12px; }
+  h1 { font-size:32px; font-weight:800; letter-spacing:-0.5px; margin-bottom:12px; }
+  .subtitle { font-size:16px; color:var(--gray-light); margin-bottom:48px; }
+  .contact-cards { display:flex; flex-direction:column; gap:16px; }
+  .contact-card {
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:24px 28px;
+    display:flex;
+    align-items:center;
+    gap:20px;
+    text-decoration:none;
+    transition:border-color 0.2s, transform 0.2s;
+  }
+  .contact-card:hover {
+    border-color:var(--green-border);
+    transform:translateY(-2px);
+  }
+  .contact-icon {
+    width:48px; height:48px;
+    background:var(--green-glow);
+    border:1px solid var(--green-border);
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    flex-shrink:0;
+  }
+  .contact-info h3 { font-size:16px; font-weight:700; margin-bottom:4px; color:var(--white); }
+  .contact-info p { font-size:14px; color:var(--gray); margin:0; }
+  .contact-info span { font-size:14px; color:var(--green-light); font-weight:600; }
+  .response-note {
+    margin-top:32px;
+    padding:16px 20px;
+    background:var(--bg3);
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:13px;
+    color:var(--gray);
+    text-align:center;
+  }
+  footer { padding:32px 48px; border-top:1px solid var(--line); text-align:center; font-size:13px; color:var(--gray); }
+  @media(max-width:768px) {
+    nav { padding:16px 20px; }
+    .container { padding:48px 20px; }
+    footer { padding:24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">Porta<span>leve</span></a>
+  <a href="/" class="nav-back">← Voltar ao site</a>
+</nav>
+
+<div class="container">
+  <div class="page-tag">Fale conosco</div>
+  <h1>Entre em contato</h1>
+  <p class="subtitle">Tem alguma dúvida ou quer saber mais sobre a Portaleve? Estamos aqui para ajudar.</p>
+
+  <div class="contact-cards">
+    <a href="mailto:contato@portaleve.com" class="contact-card">
+      <div class="contact-icon">✉️</div>
+      <div class="contact-info">
+        <h3>Email</h3>
+        <p>Para dúvidas gerais e suporte</p>
+        <span>contato@portaleve.com</span>
+      </div>
+    </a>
+
+    <a href="https://www.instagram.com/portaleve.ai" target="_blank" class="contact-card">
+      <div class="contact-icon">📸</div>
+      <div class="contact-info">
+        <h3>Instagram</h3>
+        <p>Conteúdo sobre crédito e finanças</p>
+        <span>@portaleve.ai</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="response-note">
+    ⏱ Respondemos em até 24 horas nos dias úteis.
+  </div>
+</div>
+
+<footer>
+  © 2026 Portaleve. Todos os direitos reservados.
+</footer>
+
+</body>
+</html>
