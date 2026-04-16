@@ -242,6 +242,10 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
   .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .form-privacy { text-align:center; font-size:12px; color:var(--gray); margin-top:14px; line-height:1.5; }
 
+  /* ── OUTRO BANCO ── */
+  #outro-banco-wrap { display: none; }
+  #outro-banco-wrap.visible { display: block; }
+
   /* STEP INDICATOR */
   .step-indicator {
     display: flex;
@@ -309,7 +313,6 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
     .hero{padding:96px 20px 52px}
     .hero-grid{grid-template-columns:1fr;gap:28px}
 
-    /* Terminal vira card compacto no mobile */
     .terminal{display:block}
     .t-bar{padding:10px 14px}
     .t-title{font-size:10px}
@@ -408,11 +411,9 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
     margin-bottom: 24px;
   }
 
-  /* Modal positivo */
   .modal-positive { border-top: 3px solid var(--green); }
   .modal-positive .modal-title { color: var(--green-light); }
 
-  /* Modal negativo */
   .modal-negative { border-top: 3px solid #E05252; }
   .modal-negative .modal-title { color: #E05252; }
 
@@ -659,15 +660,25 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       <div class="form-step hidden" id="step2">
         <button class="btn-back" onclick="goToStep1()">← Voltar</button>
         <div class="step-label">Passo <strong>2 de 2</strong> — Dados do seu empréstimo</div>
+
         <div class="form-group">
           <label class="form-label">Banco do seu Crédito do Trabalhador / consignado CLT</label>
-          <select id="f-banco" class="form-input form-select">
+          <select id="f-banco" class="form-input form-select" onchange="handleBancoChange(this)">
             <option value="" disabled selected>Selecione o banco</option>
-            <option>Banco Pan</option><option>C6 Bank</option><option>Meu Tudo</option>
-            <option>Itaú</option><option>Santander</option><option>Banco do Brasil</option>
-            <option>Caixa Econômica Federal</option><option>Outro</option>
+            <option>Banco Pan</option>
+            <option>C6 Bank</option>
+            <option>Meu Tudo</option>
+            <option>Itaú</option>
+            <option>Santander</option>
+            <option>Banco do Brasil</option>
+            <option>Caixa Econômica Federal</option>
+            <option>Outro</option>
           </select>
+          <div id="outro-banco-wrap">
+            <input id="f-banco-outro" type="text" class="form-input" placeholder="Qual é o nome do seu banco?" autocomplete="off" style="margin-top:10px">
+          </div>
         </div>
+
         <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
           <div class="form-group"><label class="form-label">Valor do empréstimo</label><input id="f-valor" type="text" class="form-input" placeholder="R$ 0" oninput="maskCurrency(this)"></div>
           <div class="form-group"><label class="form-label">Parcela mensal</label><input id="f-parcela" type="text" class="form-input" placeholder="R$ 0" oninput="maskCurrency(this)"></div>
@@ -776,6 +787,30 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
   const MARKET_AVG = 0.029;       // 2,9% a.m.
   const THRESHOLD  = MARKET_AVG * 1.10; // 3,19% — 10% acima da média
 
+  // ─── BANCO: LIDA COM "OUTRO" ───────────────────────────
+  function handleBancoChange(sel) {
+    const wrap = document.getElementById('outro-banco-wrap');
+    const outroInput = document.getElementById('f-banco-outro');
+    if (sel.value === 'Outro') {
+      wrap.classList.add('visible');
+      outroInput.focus();
+    } else {
+      wrap.classList.remove('visible');
+      outroInput.value = '';
+      clearError(outroInput);
+    }
+  }
+
+  // Retorna o nome real do banco (substitui "Outro" pelo digitado)
+  function getBanco() {
+    const sel = document.getElementById('f-banco');
+    if (sel.value === 'Outro') {
+      const digitado = document.getElementById('f-banco-outro').value.trim();
+      return digitado || 'Outro';
+    }
+    return sel.value;
+  }
+
   // ─── CÁLCULO DE TAXA (Newton-Raphson) ──────────────────
   function calcRate(pv, pmt, n) {
     if (pv <= 0 || pmt <= 0 || n <= 0) return null;
@@ -807,14 +842,12 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
   }
 
   // ─── LIMPA NÚMERO (formato pt-BR: 12.000,50) ──────────
-  // ponto = separador de milhar → remove
-  // vírgula = separador decimal → vira ponto
   function cleanNum(s) {
     if (!s) return 0;
     const cleaned = s
-      .replace(/[R$\s]/g, '')   // remove R$, espaços
-      .replace(/\./g, '')        // remove pontos de milhar
-      .replace(',', '.');        // vírgula decimal → ponto
+      .replace(/[R$\s]/g, '')
+      .replace(/\./g, '')
+      .replace(',', '.');
     return parseFloat(cleaned) || 0;
   }
 
@@ -833,7 +866,6 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
     const n    = parseInt(document.getElementById('f-parcelas')?.value) || 0;
     const rate = calcRate(pv, pmt, n);
 
-    // Personaliza o modal com o nome do cliente
     const titulo = nome ? `Pode deixar com a gente, ${nome}!` : 'Pode deixar com a gente!';
     const sub = nome
       ? `Recebemos sua análise, ${nome}. Já estamos buscando as melhores propostas disponíveis para o seu perfil.`
@@ -849,7 +881,6 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
   function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
   function closeConfirmOutside(e) { if (e.target === document.getElementById('confirmOverlay')) closeConfirm(); }
 
-  // Botão CTA do modal resultado → abre confirmação
   function handleCta() { openConfirm(); }
 
   // ─── ENVIA LEAD PARA N8N ───────────────────────────────
@@ -862,7 +893,7 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       data:               new Date().toLocaleString('pt-BR'),
       nome:               document.getElementById('f-nome')?.value || '',
       whatsapp:           document.getElementById('f-whatsapp')?.value || '',
-      banco:              document.getElementById('f-banco')?.value || '',
+      banco:              getBanco(),   // ← usa o nome real, nunca "Outro"
       parcela:            pmt,
       parcelas_restantes: n,
       valor_emprestimo:   pv,
@@ -969,12 +1000,9 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
   function isValidPhone(phone) {
     const digits = phone.replace(/\D/g, '');
     if (digits.length < 10 || digits.length > 11) return false;
-    // DDD válido (11-99)
     const ddd = parseInt(digits.substring(0, 2));
     if (ddd < 11 || ddd > 99) return false;
-    // Celular com 11 dígitos deve começar com 9
     if (digits.length === 11 && digits[2] !== '9') return false;
-    // Sequências inválidas
     if (/^(\d)\1+$/.test(digits)) return false;
     return true;
   }
@@ -998,12 +1026,12 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
 
     // Envia etapa 1 para o N8N imediatamente
     const payload = {
-      data:      new Date().toLocaleString('pt-BR'),
-      nome:      nome.value.trim(),
-      whatsapp:  whatsapp.value.trim(),
-      etapa:     'Etapa 1 — Contato capturado',
-      banco:     '',
-      parcela:   '',
+      data:               new Date().toLocaleString('pt-BR'),
+      nome:               nome.value.trim(),
+      whatsapp:           whatsapp.value.trim(),
+      etapa:              'Etapa 1 — Contato capturado',
+      banco:              '',
+      parcela:            '',
       parcelas_restantes: '',
       valor_emprestimo:   '',
       taxa_calculada:     '',
@@ -1016,10 +1044,8 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       body: JSON.stringify(payload)
     }).catch(err => console.error('Webhook error:', err));
 
-    // Pixel — rastreia início do formulário
     if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout');
 
-    // Avança para etapa 2
     document.getElementById('step1').classList.add('hidden');
     document.getElementById('step2').classList.remove('hidden');
     document.getElementById('dot1').classList.remove('active');
@@ -1061,14 +1087,22 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
 
   // ─── SUBMIT ETAPA 2 ────────────────────────────────────
   function handleSubmit() {
-    const pvEl  = document.getElementById('f-valor');
-    const pmtEl = document.getElementById('f-parcela');
-    const nEl   = document.getElementById('f-parcelas');
-    const bancoEl = document.getElementById('f-banco');
+    const bancoSel  = document.getElementById('f-banco');
+    const outroEl   = document.getElementById('f-banco-outro');
+    const pvEl      = document.getElementById('f-valor');
+    const pmtEl     = document.getElementById('f-parcela');
+    const nEl       = document.getElementById('f-parcelas');
 
     clearError(pvEl);
     clearError(pmtEl);
     clearError(nEl);
+    clearError(outroEl);
+
+    // ── Valida campo "Outro banco"
+    if (bancoSel.value === 'Outro' && !outroEl.value.trim()) {
+      showError(outroEl, 'Por favor, informe o nome do seu banco.');
+      return;
+    }
 
     const pv  = cleanNum(pvEl.value);
     const pmt = cleanNum(pmtEl.value);
@@ -1104,7 +1138,6 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
     // ── Parcela muito baixa — total não cobre o empréstimo
     const totalPago = pmt * n;
     if (totalPago < pv) {
-      // Calcula parcela mínima aproximada (sem juros) para dar dica
       const pmtMinima = Math.ceil(pv / n);
       showError(pmtEl, `Com ${n} parcelas de ${fmt(pmt)}, o total pago seria ${fmt(totalPago)}, menos que o empréstimo de ${fmt(pv)}. A parcela mínima esperada seria em torno de ${fmt(pmtMinima)}. Verifique o valor da parcela.`);
       return;
