@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Diagnóstico de Taxa — Portaleve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #7AAF4E;
+    --green-light: #8FC45E;
+    --green-dim: rgba(122,175,78,0.13);
+    --green-border: rgba(122,175,78,0.25);
+    --bg: #1A1B18;
+    --bg2: #222320;
+    --bg3: #2A2B27;
+    --line: rgba(255,255,255,0.07);
+    --gray: #6E6F68;
+    --gray-mid: #9A9B93;
+    --gray-light: #C4C5BC;
+    --white: #EEEEE9;
+    --red: #E05252;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { scroll-behavior:smooth; }
+
+  body {
+    font-family:'Plus Jakarta Sans',sans-serif;
+    background:var(--bg);
+    color:var(--white);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    overflow-x:hidden;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    width:100%;
+    max-width:480px;
+    padding:16px 20px 0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .logo { font-weight:800; font-size:18px; letter-spacing:-0.3px; }
+  .logo span { color:var(--green-light); }
+  .badge {
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1px; color:var(--green-light);
+    background:var(--green-dim); border:1px solid var(--green-border);
+    border-radius:4px; padding:4px 9px;
+    display:flex; align-items:center; gap:5px;
+  }
+  .dot-blink {
+    width:5px; height:5px; background:var(--green-light);
+    border-radius:50%; animation:blink 1.8s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    width:100%; max-width:480px;
+    padding:16px 20px 0;
+  }
+  .progress-track {
+    height:3px; background:var(--bg3);
+    border-radius:2px; overflow:hidden;
+  }
+  .progress-fill {
+    height:100%; background:var(--green);
+    border-radius:2px;
+    transition:width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-label {
+    font-size:11px; color:var(--gray);
+    margin-top:8px; font-weight:600;
+    letter-spacing:0.3px;
+  }
+  .progress-label strong { color:var(--green-light); }
+
+  /* ── MAIN CARD ── */
+  .card-wrap {
+    width:100%; max-width:480px;
+    padding:20px 20px 32px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ── SCREEN ── */
+  .screen { display:none; flex-direction:column; flex:1; animation:fadeUp 0.35s ease forwards; }
+  .screen.active { display:flex; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── INTRO ── */
+  .intro-visual {
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px 20px;
+    margin-bottom:24px;
+    position:relative;
+    overflow:hidden;
+  }
+  .intro-visual::before {
+    content:'';
+    position:absolute; top:0; left:40px; right:40px; height:1px;
+    background:linear-gradient(90deg,transparent,var(--green),transparent);
+  }
+  .intro-stat-row {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:10px; margin-bottom:16px;
+  }
+  .intro-stat {
+    background:var(--bg3); border:1px solid var(--line);
+    border-radius:10px; padding:14px 14px;
+    text-align:center;
+  }
+  .intro-stat-n {
+    font-size:26px; font-weight:900;
+    color:var(--green-light); letter-spacing:-1px;
+    line-height:1;
+  }
+  .intro-stat-l { font-size:11px; color:var(--gray-mid); margin-top:4px; line-height:1.4; }
+  .intro-alert {
+    background:rgba(224,82,82,0.1); border:1px solid rgba(224,82,82,0.25);
+    border-radius:8px; padding:12px 14px;
+    font-size:13px; color:var(--gray-light); line-height:1.5;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .intro-alert-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+
+  .intro-title {
+    font-size:26px; font-weight:900; letter-spacing:-0.7px;
+    line-height:1.15; margin-bottom:10px;
+  }
+  .intro-title em { font-style:normal; color:var(--green-light); }
+  .intro-sub { font-size:14px; color:var(--gray-light); line-height:1.6; margin-bottom:24px; }
+
+  .checks { display:flex; flex-direction:column; gap:8px; margin-bottom:28px; }
+  .check-item {
+    display:flex; align-items:center; gap:10px;
+    font-size:13px; color:var(--gray-light);
+    background:var(--bg2); border:1px solid var(--line);
+    border-radius:8px; padding:10px 14px;
+  }
+  .check-ico { color:var(--green-light); font-size:13px; font-weight:800; flex-shrink:0; }
+
+  /* ── STEP: QUESTION ── */
+  .q-label {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.1px; color:var(--green-light); margin-bottom:12px;
+  }
+  .q-title {
+    font-size:22px; font-weight:800; letter-spacing:-0.4px;
+    line-height:1.2; margin-bottom:8px;
+  }
+  .q-sub { font-size:13px; color:var(--gray-mid); line-height:1.5; margin-bottom:24px; }
+
+  /* ── OPTIONS ── */
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .opt {
+    background:var(--bg2); border:1.5px solid var(--line);
+    border-radius:10px; padding:16px 18px;
+    font-size:15px; font-weight:600; color:var(--white);
+    cursor:pointer; text-align:left;
+    display:flex; align-items:center; gap:14px;
+    transition:all 0.2s; position:relative;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .opt:hover, .opt:active { border-color:var(--green-border); background:var(--bg3); }
+  .opt.selected { border-color:var(--green); background:var(--green-dim); }
+  .opt-logo {
+    width:32px; height:32px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; color:#fff;
+    flex-shrink:0; letter-spacing:-0.5px;
+  }
+  .opt-check {
+    margin-left:auto; width:20px; height:20px;
+    border:2px solid var(--gray); border-radius:50%;
+    flex-shrink:0; transition:all 0.2s;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .opt.selected .opt-check {
+    border-color:var(--green); background:var(--green);
+  }
+  .opt.selected .opt-check::after { content:'✓'; font-size:11px; color:#fff; font-weight:800; }
+
+  /* ── INPUT ── */
+  .input-group { margin-bottom:16px; position:relative; }
+  .input-label { font-size:12px; font-weight:700; color:var(--gray-mid); margin-bottom:8px; display:block; letter-spacing:0.2px; }
+  .input-field {
+    width:100%; background:var(--bg2);
+    border:1.5px solid var(--line);
+    border-radius:10px; padding:16px 16px;
+    font-size:18px; font-weight:700; color:var(--white);
+    font-family:'Plus Jakarta Sans',sans-serif;
+    outline:none; transition:border-color 0.2s;
+    -webkit-appearance:none;
+  }
+  .input-field:focus { border-color:var(--green); background:var(--bg3); }
+  .input-field::placeholder { color:var(--gray); font-size:16px; font-weight:500; }
+  .input-field.error { border-color:var(--red); }
+  .input-hint { font-size:11px; color:var(--gray); margin-top:6px; line-height:1.4; }
+  .input-hint.err { color:var(--red); }
+
+  /* ── CONTACT SCREEN ── */
+  .gate-title { font-size:22px; font-weight:900; letter-spacing:-0.5px; margin-bottom:6px; line-height:1.2; }
+  .gate-sub { font-size:13px; color:var(--gray-mid); line-height:1.6; margin-bottom:24px; }
+  .gate-preview {
+    background:var(--bg2); border:1px solid var(--green-border);
+    border-radius:12px; padding:18px 20px;
+    margin-bottom:24px; position:relative; overflow:hidden;
+  }
+  .gate-preview::before {
+    content:''; position:absolute;
+    top:0; left:30px; right:30px; height:1px;
+    background:linear-gradient(90deg,transparent,var(--green),transparent);
+  }
+  .gate-preview-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--green-light); margin-bottom:10px; }
+  .gate-blurred { filter:blur(5px); user-select:none; pointer-events:none; }
+  .gate-blur-row { display:flex; justify-content:space-between; padding:6px 0; font-size:14px; font-weight:600; border-bottom:1px solid var(--line); }
+  .gate-blur-row:last-child { border:none; }
+  .gate-lock {
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:28px;
+  }
+
+  /* ── RESULT ── */
+  .result-header { text-align:center; margin-bottom:20px; }
+  .result-icon { font-size:44px; margin-bottom:12px; }
+  .result-title { font-size:22px; font-weight:900; letter-spacing:-0.5px; line-height:1.2; }
+  .result-title.good { color:var(--green-light); }
+  .result-title.bad { color:var(--red); }
+  .result-sub { font-size:13px; color:var(--gray-mid); line-height:1.5; margin-top:8px; }
+
+  .result-card {
+    background:var(--bg2); border:1px solid var(--line);
+    border-radius:12px; overflow:hidden; margin-bottom:16px;
+  }
+  .result-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 18px; border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .result-row:last-child { border:none; }
+  .result-row-l { color:var(--gray-mid); }
+  .result-row-v { font-weight:700; }
+  .val-bad { color:var(--red); }
+  .val-good { color:var(--green-light); }
+
+  .saving-box {
+    background:var(--green-dim); border:1px solid var(--green-border);
+    border-radius:12px; padding:20px; text-align:center; margin-bottom:16px;
+  }
+  .saving-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--green-light); margin-bottom:6px; }
+  .saving-value { font-size:36px; font-weight:900; color:var(--green-light); letter-spacing:-1.5px; }
+  .saving-sub { font-size:12px; color:var(--gray-mid); margin-top:4px; }
+
+  .good-box {
+    background:var(--green-dim); border:1px solid var(--green-border);
+    border-radius:12px; padding:20px; text-align:center; margin-bottom:16px;
+  }
+  .good-box-emoji { font-size:28px; margin-bottom:8px; }
+  .good-box-title { font-size:16px; font-weight:800; color:var(--green-light); margin-bottom:4px; }
+  .good-box-sub { font-size:12px; color:var(--gray-mid); line-height:1.5; }
+
+  /* ── SHARE CARD (resultado compartilhável) ── */
+  .share-card {
+    background:var(--bg2); border:1px solid var(--line);
+    border-radius:12px; padding:16px 18px; margin-bottom:20px;
+  }
+  .share-card-label { font-size:11px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:10px; }
+  .share-text { font-size:13px; color:var(--gray-light); line-height:1.6; }
+  .share-text strong { color:var(--green-light); }
+
+  /* ── BTN ── */
+  .btn {
+    width:100%; padding:16px;
+    background:var(--green); color:var(--white);
+    border:none; border-radius:10px;
+    font-size:16px; font-weight:800;
+    font-family:'Plus Jakarta Sans',sans-serif;
+    cursor:pointer; letter-spacing:-0.2px;
+    transition:all 0.2s; display:flex;
+    align-items:center; justify-content:center; gap:8px;
+  }
+  .btn:hover { background:var(--green-light); transform:translateY(-1px); }
+  .btn:active { transform:translateY(0); }
+
+  .btn-secondary {
+    width:100%; padding:14px;
+    background:transparent; color:var(--gray-mid);
+    border:1.5px solid var(--line); border-radius:10px;
+    font-size:14px; font-weight:600;
+    font-family:'Plus Jakarta Sans',sans-serif;
+    cursor:pointer; margin-top:10px;
+    transition:all 0.2s;
+  }
+  .btn-secondary:hover { border-color:var(--green-border); color:var(--green-light); }
+
+  .btn-insta {
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    margin-top:0;
+  }
+  .btn-insta:hover { opacity:0.9; transform:translateY(-1px); }
+
+  .btn-back {
+    background:none; border:none; color:var(--gray);
+    font-size:13px; font-family:'Plus Jakarta Sans',sans-serif;
+    cursor:pointer; display:flex; align-items:center; gap:6px;
+    padding:0; margin-bottom:20px; transition:color 0.2s;
+  }
+  .btn-back:hover { color:var(--green-light); }
+
+  /* ── FOOTER ── */
+  .footer-note {
+    font-size:11px; color:var(--gray); text-align:center;
+    line-height:1.5; margin-top:16px; padding:0 8px;
+  }
+
+  /* ── LOADING ── */
+  .loading-wrap {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:32px 20px; text-align:center;
+  }
+  .loading-spinner {
+    width:52px; height:52px;
+    border:3px solid var(--bg3);
+    border-top:3px solid var(--green);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+    margin-bottom:24px;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-title { font-size:18px; font-weight:800; margin-bottom:8px; }
+  .loading-steps { display:flex; flex-direction:column; gap:8px; margin-top:20px; width:100%; max-width:280px; }
+  .loading-step {
+    display:flex; align-items:center; gap:10px;
+    font-size:13px; color:var(--gray-mid);
+    background:var(--bg2); border:1px solid var(--line);
+    border-radius:8px; padding:10px 14px; text-align:left;
+    opacity:0; animation:fadeUp 0.4s ease forwards;
+  }
+  .loading-step:nth-child(1) { animation-delay:0.2s; }
+  .loading-step:nth-child(2) { animation-delay:0.9s; }
+  .loading-step:nth-child(3) { animation-delay:1.6s; }
+  .loading-step-icon { color:var(--green-light); font-size:14px; flex-shrink:0; }
+
+  /* ── CONFIRM SCREEN ── */
+  .confirm-wrap { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px 0; }
+  .confirm-icon { font-size:52px; margin-bottom:16px; animation:popIn 0.5s cubic-bezier(.175,.885,.32,1.275) forwards; }
+  @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
+  .confirm-title { font-size:24px; font-weight:900; letter-spacing:-0.5px; margin-bottom:10px; color:var(--green-light); }
+  .confirm-sub { font-size:14px; color:var(--gray-light); line-height:1.6; margin-bottom:28px; }
+  .confirm-steps {
+    background:var(--bg2); border:1px solid var(--line);
+    border-radius:12px; padding:20px; text-align:left; margin-bottom:24px; width:100%;
+  }
+  .confirm-step-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--gray); margin-bottom:14px; }
+  .confirm-step-item { display:flex; gap:12px; align-items:flex-start; font-size:13px; color:var(--gray-light); margin-bottom:12px; line-height:1.5; }
+  .confirm-step-item:last-child { margin-bottom:0; }
+  .confirm-step-num { color:var(--green-light); font-weight:800; flex-shrink:0; }
+
+  /* MOBILE SAFE AREA */
+  .safe-bottom { height:env(safe-area-inset-bottom, 0); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">Porta<span>leve</span></div>
+  <div class="badge"><div class="dot-blink"></div>IA ativa</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap" id="progressWrap" style="display:none">
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-label" id="progressLabel">Passo <strong>1</strong> de 5</div>
+</div>
+
+<!-- MAIN -->
+<div class="card-wrap">
+
+  <!-- SCREEN 0: INTRO -->
+  <div class="screen active" id="screen-intro">
+    <div class="intro-visual">
+      <div class="intro-stat-row">
+        <div class="intro-stat">
+          <div class="intro-stat-n">+140%</div>
+          <div class="intro-stat-l">diferença entre as melhores e piores taxas</div>
+        </div>
+        <div class="intro-stat">
+          <div class="intro-stat-n">10M+</div>
+          <div class="intro-stat-l">trabalhadores com consignado CLT ativo</div>
+        </div>
+      </div>
+      <div class="intro-alert">
+        <span class="intro-alert-icon">⚠️</span>
+        <span>A maioria dos trabalhadores <strong>não sabe</strong> se está pagando juros acima da média no consignado.</span>
+      </div>
+    </div>
+
+    <div class="intro-title">Você está pagando juros <em>acima da média</em> no seu consignado?</div>
+    <div class="intro-sub">Nossa IA compara sua taxa com o mercado em 2 minutos. 100% gratuito, sem senha, sem acesso à conta.</div>
+
+    <div class="checks">
+      <div class="check-item"><span class="check-ico">✓</span> Não somos banco — trabalhamos pelo seu lado</div>
+      <div class="check-item"><span class="check-ico">✓</span> Sem acesso à conta ou senha</div>
+      <div class="check-item"><span class="check-ico">✓</span> Resultado em 2 minutos, no próprio celular</div>
+    </div>
+
+    <button class="btn" onclick="goTo('screen-q1')">Fazer meu diagnóstico gratuito →</button>
+    <div class="footer-note">🔒 Dados protegidos pela LGPD. Sem spam.</div>
+  </div>
+
+  <!-- SCREEN Q1: BANCO -->
+  <div class="screen" id="screen-q1">
+    <button class="btn-back" onclick="goTo('screen-intro')">← Voltar</button>
+    <div class="q-label">Passo 1 de 5</div>
+    <div class="q-title">Qual banco tem o seu Crédito do Trabalhador?</div>
+    <div class="q-sub">Cada banco pratica taxas diferentes. Isso é o primeiro passo da análise.</div>
+    <div class="options" id="banks-list">
+      <div class="opt" onclick="selectBank(this,'Banco Pan')">
+        <div class="opt-logo" style="background:#1A6FD4">P</div>Banco Pan<div class="opt-check"></div>
+      </div>
+      <div class="opt" onclick="selectBank(this,'C6 Bank')">
+        <div class="opt-logo" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.15)">C6</div>C6 Bank<div class="opt-check"></div>
+      </div>
+      <div class="opt" onclick="selectBank(this,'Itaú')">
+        <div class="opt-logo" style="background:#EC7000">I</div>Itaú<div class="opt-check"></div>
+      </div>
+      <div class="opt" onclick="selectBank(this,'Santander')">
+        <div class="opt-logo" style="background:#CC0000">S</div>Santander<div class="opt-check"></div>
+      </div>
+      <div class="opt" onclick="selectBank(this,'Banco do Brasil')">
+        <div class="opt-logo" style="background:#F9C700;color:#333">BB</div>Banco do Brasil<div class="opt-check"></div>
+      </div>
+      <div class="opt" onclick="selectBank(this,'Caixa Econômica Federal')">
+        <div class="opt-logo" style="background:#F47920">CEF</div>Caixa<div class="opt-check"></div>
+      </div>
+      <div class="opt" onclick="selectBank(this,'Meu Tudo')">
+        <div class="opt-logo" style="background:#E91E8C">M</div>Meu Tudo<div class="opt-check"></div>
+      </div>
+      <div class="opt" onclick="selectBank(this,'Outro')">
+        <div class="opt-logo" style="background:var(--bg3);border:1px solid var(--line)">?</div>Outro banco<div class="opt-check"></div>
+      </div>
+    </div>
+    <div id="bank-error" class="input-hint err" style="display:none;margin-top:12px">⚠ Selecione o banco do seu consignado.</div>
+    <button class="btn" style="margin-top:20px" onclick="nextFromBank()">Continuar →</button>
+  </div>
+
+  <!-- SCREEN Q2: VALOR -->
+  <div class="screen" id="screen-q2">
+    <button class="btn-back" onclick="goTo('screen-q1')">← Voltar</button>
+    <div class="q-label">Passo 2 de 5</div>
+    <div class="q-title">Qual foi o valor total que você pegou emprestado?</div>
+    <div class="q-sub">É o valor que caiu na sua conta, não o total que você vai pagar.</div>
+    <div class="input-group">
+      <label class="input-label">Valor do empréstimo</label>
+      <input type="text" id="f-valor" class="input-field" placeholder="R$ 0" oninput="maskCurrency(this)" inputmode="numeric" autocomplete="off">
+      <div class="input-hint">Ex: R$ 12.000 — encontre no contrato ou no app do banco</div>
+    </div>
+    <div id="valor-error" class="input-hint err" style="display:none"></div>
+    <button class="btn" onclick="nextFromValor()">Continuar →</button>
+  </div>
+
+  <!-- SCREEN Q3: PARCELA -->
+  <div class="screen" id="screen-q3">
+    <button class="btn-back" onclick="goTo('screen-q2')">← Voltar</button>
+    <div class="q-label">Passo 3 de 5</div>
+    <div class="q-title">Quanto você paga por mês?</div>
+    <div class="q-sub">O valor exato da parcela mensal descontada no seu salário.</div>
+    <div class="input-group">
+      <label class="input-label">Parcela mensal</label>
+      <input type="text" id="f-parcela" class="input-field" placeholder="R$ 0" oninput="maskCurrency(this)" inputmode="numeric" autocomplete="off">
+      <div class="input-hint">Confira no holerite ou no app do banco</div>
+    </div>
+    <div id="parcela-error" class="input-hint err" style="display:none"></div>
+    <button class="btn" onclick="nextFromParcela()">Continuar →</button>
+  </div>
+
+  <!-- SCREEN Q4: PARCELAS -->
+  <div class="screen" id="screen-q4">
+    <button class="btn-back" onclick="goTo('screen-q3')">← Voltar</button>
+    <div class="q-label">Passo 4 de 5</div>
+    <div class="q-title">Quantas parcelas tem o contrato?</div>
+    <div class="q-sub">O prazo total do empréstimo em meses — não as parcelas restantes.</div>
+    <div class="input-group">
+      <label class="input-label">Número de parcelas</label>
+      <input type="number" id="f-parcelas" class="input-field" placeholder="Ex: 36" min="6" max="96" inputmode="numeric" autocomplete="off">
+      <div class="input-hint">Geralmente entre 12 e 84 meses</div>
+    </div>
+    <div id="parcelas-error" class="input-hint err" style="display:none"></div>
+    <button class="btn" onclick="nextFromParcelas()">Continuar →</button>
+  </div>
+
+  <!-- SCREEN Q5: CONTATO (gate) -->
+  <div class="screen" id="screen-contato">
+    <button class="btn-back" onclick="goTo('screen-q4')">← Voltar</button>
+    <div class="q-label">Passo 5 de 5 — Quase lá!</div>
+    <div class="gate-title">Seu resultado está pronto. 🎯</div>
+    <div class="gate-sub">Para liberar a análise completa, informe onde te mandamos o resultado.</div>
+
+    <div class="gate-preview">
+      <div class="gate-preview-label">🔍 Prévia do diagnóstico</div>
+      <div class="gate-blurred">
+        <div class="gate-blur-row"><span>Sua taxa estimada</span><span style="color:var(--red)">?.?% a.m.</span></div>
+        <div class="gate-blur-row"><span>Média do mercado</span><span style="color:var(--green-light)">2.9% a.m.</span></div>
+        <div class="gate-blur-row"><span>Economia potencial</span><span style="color:var(--green-light)">R$ ?.???</span></div>
+      </div>
+      <div class="gate-lock">🔒</div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Seu nome</label>
+      <input type="text" id="f-nome" class="input-field" placeholder="Como te chamam?" autocomplete="name" style="font-size:16px;font-weight:600">
+    </div>
+    <div class="input-group">
+      <label class="input-label">WhatsApp (com DDD)</label>
+      <input type="tel" id="f-whatsapp" class="input-field" placeholder="(11) 99999-9999" oninput="maskPhone(this)" maxlength="15" inputmode="tel" style="font-size:16px;font-weight:600">
+    </div>
+    <div id="contato-error" class="input-hint err" style="display:none"></div>
+    <button class="btn" onclick="handleSubmit()">Ver minha análise gratuita →</button>
+    <div class="footer-note">🔒 Sem spam. Seus dados são protegidos pela LGPD. Não vendemos suas informações.</div>
+  </div>
+
+  <!-- SCREEN LOADING -->
+  <div class="screen" id="screen-loading">
+    <div class="loading-wrap">
+      <div class="loading-spinner"></div>
+      <div class="loading-title">Analisando seu contrato...</div>
+      <div style="font-size:13px;color:var(--gray-mid)">Nossa IA está comparando com o mercado</div>
+      <div class="loading-steps">
+        <div class="loading-step"><span class="loading-step-icon">📡</span> Buscando taxas de mercado...</div>
+        <div class="loading-step"><span class="loading-step-icon">🧠</span> Calculando sua taxa real...</div>
+        <div class="loading-step"><span class="loading-step-icon">💰</span> Calculando economia potencial...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN RESULTADO NEGATIVO (acima da média) -->
+  <div class="screen" id="screen-result-bad">
+    <div class="result-header">
+      <div class="result-icon">⚠️</div>
+      <div class="result-title bad" id="result-bad-title">Você está pagando acima da média.</div>
+      <div class="result-sub" id="result-bad-sub"></div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-row">
+        <span class="result-row-l">Sua taxa estimada</span>
+        <span class="result-row-v val-bad" id="r-taxa-user"></span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-l">Média do mercado</span>
+        <span class="result-row-v val-good">2,9% a.m.</span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-l">Sua parcela atual</span>
+        <span class="result-row-v val-bad" id="r-pmt-atual"></span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-l">Parcela estimada com taxa média</span>
+        <span class="result-row-v val-good" id="r-pmt-novo"></span>
+      </div>
+    </div>
+
+    <div class="saving-box">
+      <div class="saving-label">💰 Economia potencial no contrato</div>
+      <div class="saving-value" id="r-saving-total"></div>
+      <div class="saving-sub" id="r-saving-sub"></div>
+    </div>
+
+    <div class="share-card">
+      <div class="share-card-label">📲 Compartilhe com amigos</div>
+      <div class="share-text" id="r-share-text"></div>
+    </div>
+
+    <button class="btn" onclick="handleCta()">Quero reduzir minha taxa →</button>
+    <button class="btn-secondary" onclick="shareResult()">Compartilhar resultado 📲</button>
+    <div class="footer-note">Gratuito. Sem compromisso. Um especialista entra em contato pelo WhatsApp.</div>
+  </div>
+
+  <!-- SCREEN RESULTADO POSITIVO (dentro da média) -->
+  <div class="screen" id="screen-result-good">
+    <div class="result-header">
+      <div class="result-icon">🎉</div>
+      <div class="result-title good" id="result-good-title">Sua taxa está dentro da média!</div>
+      <div class="result-sub">Você é um dos poucos com uma taxa justa. Mesmo assim, podemos verificar se existe algo ainda melhor.</div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-row">
+        <span class="result-row-l">Sua taxa estimada</span>
+        <span class="result-row-v val-good" id="r-taxa-user-good"></span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-l">Média do mercado</span>
+        <span class="result-row-v">2,9% a.m.</span>
+      </div>
+    </div>
+
+    <div class="good-box">
+      <div class="good-box-emoji">✅</div>
+      <div class="good-box-title">Você está bem posicionado</div>
+      <div class="good-box-sub">Mas o mercado muda constantemente. Podemos monitorar e avisar se surgir uma condição melhor para o seu perfil.</div>
+    </div>
+
+    <div class="share-card">
+      <div class="share-card-label">📲 Compartilhe com amigos</div>
+      <div class="share-text">Fiz o diagnóstico de taxa no <strong>portaleve.com</strong> e descobri que estou pagando juros dentro da média! E você, sabe quanto está pagando? 👇</div>
+    </div>
+
+    <button class="btn" onclick="handleCtaGood()">Quero verificar se existe algo melhor →</button>
+    <button class="btn-secondary" onclick="shareResult()">Compartilhar resultado 📲</button>
+    <div class="footer-note">Gratuito. Sem compromisso. Um especialista entra em contato pelo WhatsApp.</div>
+  </div>
+
+  <!-- SCREEN CONFIRMAÇÃO FINAL -->
+  <div class="screen" id="screen-confirm">
+    <div class="confirm-wrap">
+      <div class="confirm-icon">🎯</div>
+      <div class="confirm-title" id="confirm-title">Pode deixar com a gente!</div>
+      <div class="confirm-sub" id="confirm-sub">Recebemos sua análise e já estamos buscando as melhores propostas para o seu perfil.</div>
+      <div class="confirm-steps">
+        <div class="confirm-step-label">O que acontece agora</div>
+        <div class="confirm-step-item"><span class="confirm-step-num">1.</span><span>Nossa IA confirma sua taxa e busca as melhores propostas do mercado</span></div>
+        <div class="confirm-step-item"><span class="confirm-step-num">2.</span><span>Um especialista entra em contato pelo seu WhatsApp com as opções encontradas</span></div>
+        <div class="confirm-step-item"><span class="confirm-step-num">3.</span><span>Você decide se quer avançar. Sem pressão, sem compromisso</span></div>
+      </div>
+      <button class="btn btn-insta" onclick="openInstagram()">📸 Seguir a Portaleve no Instagram</button>
+      <button class="btn-secondary" onclick="shareResult()">Compartilhar com amigos 📲</button>
+    </div>
+  </div>
+
+</div>
+<div class="safe-bottom"></div>
+
+<script>
+  // ─── STATE ─────────────────────────────────────────────
+  const state = {
+    banco: '', valor: 0, parcela: 0, parcelas: 0,
+    nome: '', whatsapp: '', taxa: 0
+  };
+
+  const MARKET_AVG = 0.029;
+  const THRESHOLD  = MARKET_AVG * 1.10; // 3.19%
+
+  const STEPS = {
+    'screen-intro':    { n:0, total:5 },
+    'screen-q1':      { n:1, total:5 },
+    'screen-q2':      { n:2, total:5 },
+    'screen-q3':      { n:3, total:5 },
+    'screen-q4':      { n:4, total:5 },
+    'screen-contato': { n:5, total:5 },
+  };
+
+  // ─── NAVIGATION ────────────────────────────────────────
+  function goTo(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const next = document.getElementById(id);
+    next.classList.add('active');
+    window.scrollTo(0,0);
+
+    const step = STEPS[id];
+    const pw = document.getElementById('progressWrap');
+    if (step && step.n > 0) {
+      pw.style.display = 'block';
+      document.getElementById('progressFill').style.width = (step.n / step.total * 100) + '%';
+      document.getElementById('progressLabel').innerHTML = `Passo <strong>${step.n}</strong> de ${step.total}`;
+    } else {
+      pw.style.display = 'none';
+    }
+  }
+
+  // ─── BANK SELECTION ────────────────────────────────────
+  function selectBank(el, name) {
+    document.querySelectorAll('#banks-list .opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    state.banco = name;
+    document.getElementById('bank-error').style.display = 'none';
+  }
+
+  function nextFromBank() {
+    if (!state.banco) {
+      document.getElementById('bank-error').style.display = 'block';
+      return;
+    }
+    goTo('screen-q2');
+  }
+
+  // ─── VALOR ─────────────────────────────────────────────
+  function nextFromValor() {
+    const el = document.getElementById('f-valor');
+    const err = document.getElementById('valor-error');
+    const v = cleanNum(el.value);
+    if (!v || v < 500) {
+      err.style.display = 'block';
+      err.textContent = '⚠ Informe o valor do empréstimo. Ex: R$ 12.000';
+      el.classList.add('error'); return;
+    }
+    if (v > 500000) {
+      err.style.display = 'block';
+      err.textContent = '⚠ Valor parece muito alto. Verifique o campo.';
+      el.classList.add('error'); return;
+    }
+    el.classList.remove('error');
+    err.style.display = 'none';
+    state.valor = v;
+    goTo('screen-q3');
+  }
+
+  // ─── PARCELA ───────────────────────────────────────────
+  function nextFromParcela() {
+    const el = document.getElementById('f-parcela');
+    const err = document.getElementById('parcela-error');
+    const v = cleanNum(el.value);
+    if (!v || v < 50) {
+      err.style.display = 'block';
+      err.textContent = '⚠ Informe o valor da parcela mensal. Ex: R$ 480';
+      el.classList.add('error'); return;
+    }
+    if (v >= state.valor) {
+      err.style.display = 'block';
+      err.textContent = `⚠ A parcela não pode ser maior que o empréstimo (${fmt(state.valor)}).`;
+      el.classList.add('error'); return;
+    }
+    el.classList.remove('error');
+    err.style.display = 'none';
+    state.parcela = v;
+    goTo('screen-q4');
+  }
+
+  // ─── PARCELAS ──────────────────────────────────────────
+  function nextFromParcelas() {
+    const el = document.getElementById('f-parcelas');
+    const err = document.getElementById('parcelas-error');
+    const n = parseInt(el.value) || 0;
+    if (!n || n < 6) {
+      err.style.display = 'block';
+      err.textContent = '⚠ Prazo mínimo é 6 meses. Verifique no contrato.';
+      el.classList.add('error'); return;
+    }
+    if (n > 96) {
+      err.style.display = 'block';
+      err.textContent = '⚠ Prazo máximo é 96 meses (8 anos).';
+      el.classList.add('error'); return;
+    }
+    const totalPago = state.parcela * n;
+    if (totalPago < state.valor) {
+      err.style.display = 'block';
+      err.textContent = `⚠ Com ${n} parcelas de ${fmt(state.parcela)}, total seria ${fmt(totalPago)} — menor que o empréstimo (${fmt(state.valor)}). Confira os valores.`;
+      el.classList.add('error'); return;
+    }
+    el.classList.remove('error');
+    err.style.display = 'none';
+    state.parcelas = n;
+    goTo('screen-contato');
+  }
+
+  // ─── SUBMIT ────────────────────────────────────────────
+  function handleSubmit() {
+    const nomeEl = document.getElementById('f-nome');
+    const waEl   = document.getElementById('f-whatsapp');
+    const err    = document.getElementById('contato-error');
+
+    if (!nomeEl.value.trim()) {
+      err.style.display = 'block';
+      err.textContent = '⚠ Por favor, informe seu nome.';
+      nomeEl.focus(); return;
+    }
+    const digits = waEl.value.replace(/\D/g,'');
+    if (digits.length < 10 || digits.length > 11) {
+      err.style.display = 'block';
+      err.textContent = '⚠ Informe um WhatsApp válido com DDD. Ex: (11) 99999-9999';
+      waEl.focus(); return;
+    }
+    err.style.display = 'none';
+    state.nome = nomeEl.value.trim();
+    state.whatsapp = waEl.value.trim();
+
+    goTo('screen-loading');
+    setTimeout(() => {
+      const taxa = calcRate(state.valor, state.parcela, state.parcelas);
+      state.taxa = taxa;
+      sendLead(taxa);
+      if (taxa && taxa > THRESHOLD) {
+        renderBad(taxa);
+        goTo('screen-result-bad');
+      } else {
+        renderGood(taxa);
+        goTo('screen-result-good');
+      }
+    }, 2800);
+  }
+
+  // ─── RENDER RESULTS ────────────────────────────────────
+  function renderBad(taxa) {
+    const firstName = state.nome.split(' ')[0];
+    const { pmtNew, savingMonth, savingTotal } = calcSaving(state.valor, state.parcela, state.parcelas, MARKET_AVG);
+    const pctAbove = (((taxa/MARKET_AVG)-1)*100).toFixed(0);
+
+    document.getElementById('result-bad-title').textContent = `${firstName}, você está pagando acima da média.`;
+    document.getElementById('result-bad-sub').textContent = `Sua taxa está ${pctAbove}% acima da média do mercado. Nossa IA identificou oportunidade de redução.`;
+    document.getElementById('r-taxa-user').textContent = (taxa*100).toFixed(2) + '% a.m.';
+    document.getElementById('r-pmt-atual').textContent = fmt(state.parcela) + '/mês';
+    document.getElementById('r-pmt-novo').textContent = fmt(pmtNew) + '/mês';
+    document.getElementById('r-saving-total').textContent = fmt(savingTotal);
+    document.getElementById('r-saving-sub').textContent = `ou ${fmt(savingMonth)} a menos todo mês`;
+    document.getElementById('r-share-text').innerHTML = `Fiz o diagnóstico de taxa no <strong>portaleve.com</strong> e descobri que estava pagando ${pctAbove}% acima da média no consignado! E você, sabe quanto tá pagando? 👇`;
+  }
+
+  function renderGood(taxa) {
+    const firstName = state.nome.split(' ')[0];
+    document.getElementById('result-good-title').textContent = `${firstName}, sua taxa está dentro da média!`;
+    if (taxa) document.getElementById('r-taxa-user-good').textContent = (taxa*100).toFixed(2) + '% a.m.';
+  }
+
+  // ─── CTAs ──────────────────────────────────────────────
+  function handleCta() {
+    const firstName = state.nome.split(' ')[0];
+    document.getElementById('confirm-title').textContent = `Pode deixar com a gente, ${firstName}!`;
+    document.getElementById('confirm-sub').textContent = `Recebemos sua análise, ${firstName}. Já estamos buscando as melhores propostas para o seu perfil.`;
+    goTo('screen-confirm');
+    document.getElementById('progressWrap').style.display = 'none';
+  }
+
+  function handleCtaGood() { handleCta(); }
+
+  function openInstagram() {
+    window.open('https://www.instagram.com/portaleve.ai', '_blank');
+  }
+
+  function shareResult() {
+    const taxa = state.taxa;
+    const pctAbove = taxa > MARKET_AVG ? ` — ${(((taxa/MARKET_AVG)-1)*100).toFixed(0)}% acima da média!` : ' — dentro da média!';
+    const text = `Fiz o diagnóstico de taxa no Portaleve${pctAbove} Descubra o seu grátis: portaleve.com`;
+    if (navigator.share) {
+      navigator.share({ title:'Diagnóstico de Taxa — Portaleve', text, url:'https://portaleve.com' }).catch(()=>{});
+    } else {
+      navigator.clipboard?.writeText(text).then(()=>alert('Texto copiado! Cole no WhatsApp ou Instagram.'));
+    }
+  }
+
+  // ─── WEBHOOK ───────────────────────────────────────────
+  function sendLead(taxa) {
+    const payload = {
+      data:               new Date().toLocaleString('pt-BR'),
+      nome:               state.nome,
+      whatsapp:           state.whatsapp,
+      banco:              state.banco,
+      parcela:            state.parcela,
+      parcelas_restantes: state.parcelas,
+      valor_emprestimo:   state.valor,
+      taxa_calculada:     taxa ? (taxa*100).toFixed(2)+'%' : 'N/A',
+      resultado:          taxa > THRESHOLD ? 'Acima da média' : 'Dentro da média',
+      fonte:              'Quiz Orgânico',
+      etapa:              'Análise completa'
+    };
+    fetch('https://primary-production-2d2f8.up.railway.app/webhook/portaleve-leads', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    }).catch(e => console.error('Webhook error:', e));
+  }
+
+  // ─── MATH ──────────────────────────────────────────────
+  function calcRate(pv, pmt, n) {
+    if (pv<=0||pmt<=0||n<=0) return null;
+    let i = 0.03;
+    for (let k=0;k<1000;k++) {
+      const f  = pmt*(1-Math.pow(1+i,-n))/i - pv;
+      const df = pmt*((Math.pow(1+i,-n)*n/(i*(1+i)))-(1-Math.pow(1+i,-n))/(i*i));
+      const i2 = i - f/df;
+      if (Math.abs(i2-i)<1e-8) return i2;
+      i = i2;
+    }
+    return i;
+  }
+
+  function calcSaving(pv, pmt, n, target) {
+    const pmtNew = pv*target/(1-Math.pow(1+target,-n));
+    const savingMonth = pmt - pmtNew;
+    return { pmtNew, savingMonth, savingTotal: savingMonth*n };
+  }
+
+  // ─── FORMAT ────────────────────────────────────────────
+  function fmt(v) {
+    return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0});
+  }
+  function cleanNum(s) {
+    if(!s) return 0;
+    return parseFloat(s.replace(/[R$\s]/g,'').replace(/\./g,'').replace(',','.'))||0;
+  }
+  function maskCurrency(el) {
+    let v = el.value.replace(/\D/g,'');
+    if(!v){el.value='';return;}
+    el.value='R$ '+parseInt(v,10).toLocaleString('pt-BR');
+  }
+  function maskPhone(el) {
+    let v = el.value.replace(/\D/g,'').slice(0,11);
+    if(v.length<=10) v=v.replace(/^(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
+    else v=v.replace(/^(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
+    el.value=v;
+  }
+
+  // ─── ENTER KEY ─────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const active = document.querySelector('.screen.active');
+    if (!active) return;
+    const id = active.id;
+    if (id==='screen-q2') nextFromValor();
+    if (id==='screen-q3') nextFromParcela();
+    if (id==='screen-q4') nextFromParcelas();
+    if (id==='screen-contato') handleSubmit();
+  });
+</script>
+</body>
+</html>
