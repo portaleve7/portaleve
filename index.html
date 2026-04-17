@@ -242,9 +242,44 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
   .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .form-privacy { text-align:center; font-size:12px; color:var(--gray); margin-top:14px; line-height:1.5; }
 
-  /* ── OUTRO BANCO ── */
-  #outro-banco-wrap { display: none; }
-  #outro-banco-wrap.visible { display: block; }
+  /* CONSENT CHECKBOX */
+  .consent-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--bg3);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .consent-wrap:hover { border-color: var(--green-border); }
+  .consent-wrap.has-error { border-color: #E05252; }
+  .consent-checkbox {
+    width: 18px; height: 18px; min-width: 18px;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    background: var(--bg4);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .consent-checkbox.checked {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .consent-checkbox svg { opacity: 0; transition: opacity 0.15s; }
+  .consent-checkbox.checked svg { opacity: 1; }
+  .consent-text {
+    font-size: 12px;
+    color: var(--gray-light);
+    line-height: 1.6;
+  }
+  .consent-text a { color: var(--green-light); text-decoration: none; }
+  .consent-text a:hover { text-decoration: underline; }
 
   /* STEP INDICATOR */
   .step-indicator {
@@ -312,7 +347,6 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
     nav{padding:14px 20px}
     .hero{padding:96px 20px 52px}
     .hero-grid{grid-template-columns:1fr;gap:28px}
-
     .terminal{display:block}
     .t-bar{padding:10px 14px}
     .t-title{font-size:10px}
@@ -320,7 +354,6 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
     .t-line{font-size:11px;margin-bottom:6px}
     .t-result{padding:12px}
     .t-r-value{font-size:22px}
-
     .stats-band-inner{grid-template-columns:1fr}
     .stat-cell{border-right:none;border-bottom:1px solid var(--line)}
     .stat-cell:last-child{border-bottom:none}
@@ -660,30 +693,33 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       <div class="form-step hidden" id="step2">
         <button class="btn-back" onclick="goToStep1()">← Voltar</button>
         <div class="step-label">Passo <strong>2 de 2</strong> — Dados do seu empréstimo</div>
-
         <div class="form-group">
           <label class="form-label">Banco do seu Crédito do Trabalhador / consignado CLT</label>
-          <select id="f-banco" class="form-input form-select" onchange="handleBancoChange(this)">
+          <select id="f-banco" class="form-input form-select">
             <option value="" disabled selected>Selecione o banco</option>
-            <option>Banco Pan</option>
-            <option>C6 Bank</option>
-            <option>Meu Tudo</option>
-            <option>Itaú</option>
-            <option>Santander</option>
-            <option>Banco do Brasil</option>
-            <option>Caixa Econômica Federal</option>
-            <option>Outro</option>
+            <option>Banco Pan</option><option>C6 Bank</option><option>Meu Tudo</option>
+            <option>Itaú</option><option>Santander</option><option>Banco do Brasil</option>
+            <option>Caixa Econômica Federal</option><option>Outro</option>
           </select>
-          <div id="outro-banco-wrap">
-            <input id="f-banco-outro" type="text" class="form-input" placeholder="Qual é o nome do seu banco?" autocomplete="off" style="margin-top:10px">
-          </div>
         </div>
-
         <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
           <div class="form-group"><label class="form-label">Valor do empréstimo</label><input id="f-valor" type="text" class="form-input" placeholder="R$ 0" oninput="maskCurrency(this)"></div>
           <div class="form-group"><label class="form-label">Parcela mensal</label><input id="f-parcela" type="text" class="form-input" placeholder="R$ 0" oninput="maskCurrency(this)"></div>
           <div class="form-group"><label class="form-label">Nº de parcelas</label><input id="f-parcelas" type="number" class="form-input" placeholder="Ex: 36" min="1" max="96"></div>
         </div>
+
+        <!-- ✅ CONSENTIMENTO LGPD -->
+        <div class="consent-wrap" id="consent-wrap" onclick="toggleConsent()">
+          <div class="consent-checkbox" id="consent-checkbox">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+              <path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="consent-text">
+            Autorizo a Portaleve a compartilhar meus dados com parceiros financeiros credenciados (instituições financeiras, correspondentes bancários e promotoras de crédito) para buscar propostas de portabilidade. Li e concordo com a <a href="/privacidade" onclick="event.stopPropagation()">Política de Privacidade</a> e os <a href="/termos" onclick="event.stopPropagation()">Termos de Uso</a>.
+          </span>
+        </div>
+
         <button type="button" class="btn btn-lg" style="margin-top:8px" onclick="handleSubmit()">Ver minha análise gratuita →</button>
         <p class="form-privacy">🔒 Seus dados são protegidos. Seguimos a LGPD. Sem spam.</p>
       </div>
@@ -707,7 +743,7 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">O que vocês fazem com meus dados? <div class="faq-icon">+</div></button>
-        <div class="faq-a"><p>Seus dados são usados exclusivamente para realizar a análise e entrar em contato pelo WhatsApp. Nunca vendemos nem compartilhamos suas informações com terceiros. Seguimos a LGPD.</p></div>
+        <div class="faq-a"><p>Seus dados são usados exclusivamente para realizar a análise e buscar propostas de portabilidade junto a nossos parceiros financeiros credenciados. Nunca vendemos nem compartilhamos suas informações para fins comerciais não relacionados. Seguimos a LGPD.</p></div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Meu banco pode me prejudicar se eu pedir a portabilidade do Crédito do Trabalhador? <div class="faq-icon">+</div></button>
@@ -773,6 +809,19 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
 </footer>
 
 <script>
+  // ─── CONSENTIMENTO ─────────────────────────────────────
+  let consentGiven = false;
+
+  function toggleConsent() {
+    consentGiven = !consentGiven;
+    const cb = document.getElementById('consent-checkbox');
+    const wrap = document.getElementById('consent-wrap');
+    cb.classList.toggle('checked', consentGiven);
+    wrap.classList.remove('has-error');
+    const existing = wrap.parentNode.querySelector('[data-error-for="consent"]');
+    if (existing) existing.remove();
+  }
+
   // ─── FAQ ───────────────────────────────────────────────
   function toggleFaq(btn) {
     const a = btn.nextElementSibling;
@@ -784,32 +833,8 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
   }
 
   // ─── BENCHMARK ─────────────────────────────────────────
-  const MARKET_AVG = 0.029;       // 2,9% a.m.
-  const THRESHOLD  = MARKET_AVG * 1.10; // 3,19% — 10% acima da média
-
-  // ─── BANCO: LIDA COM "OUTRO" ───────────────────────────
-  function handleBancoChange(sel) {
-    const wrap = document.getElementById('outro-banco-wrap');
-    const outroInput = document.getElementById('f-banco-outro');
-    if (sel.value === 'Outro') {
-      wrap.classList.add('visible');
-      outroInput.focus();
-    } else {
-      wrap.classList.remove('visible');
-      outroInput.value = '';
-      clearError(outroInput);
-    }
-  }
-
-  // Retorna o nome real do banco (substitui "Outro" pelo digitado)
-  function getBanco() {
-    const sel = document.getElementById('f-banco');
-    if (sel.value === 'Outro') {
-      const digitado = document.getElementById('f-banco-outro').value.trim();
-      return digitado || 'Outro';
-    }
-    return sel.value;
-  }
+  const MARKET_AVG = 0.029;
+  const THRESHOLD  = MARKET_AVG * 1.10;
 
   // ─── CÁLCULO DE TAXA (Newton-Raphson) ──────────────────
   function calcRate(pv, pmt, n) {
@@ -841,7 +866,7 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
     return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL', minimumFractionDigits:0, maximumFractionDigits:0 });
   }
 
-  // ─── LIMPA NÚMERO (formato pt-BR: 12.000,50) ──────────
+  // ─── LIMPA NÚMERO ──────────────────────────────────────
   function cleanNum(s) {
     if (!s) return 0;
     const cleaned = s
@@ -859,28 +884,18 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
   // ─── MODAL CONFIRMAÇÃO ─────────────────────────────────
   function openConfirm() {
     closeModal();
-
     const nome = document.getElementById('f-nome')?.value.trim().split(' ')[0] || '';
-    const pv   = cleanNum(document.getElementById('f-valor')?.value || '');
-    const pmt  = cleanNum(document.getElementById('f-parcela')?.value || '');
-    const n    = parseInt(document.getElementById('f-parcelas')?.value) || 0;
-    const rate = calcRate(pv, pmt, n);
-
     const titulo = nome ? `Pode deixar com a gente, ${nome}!` : 'Pode deixar com a gente!';
     const sub = nome
       ? `Recebemos sua análise, ${nome}. Já estamos buscando as melhores propostas disponíveis para o seu perfil.`
       : 'Recebemos sua análise e já estamos buscando as melhores propostas disponíveis para o seu perfil.';
-
     document.getElementById('confirmTitle').textContent = titulo;
     document.getElementById('confirmSub').textContent = sub;
-
     if (typeof fbq !== 'undefined') fbq('track', 'Lead');
-
     setTimeout(() => document.getElementById('confirmOverlay').classList.add('open'), 200);
   }
   function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
   function closeConfirmOutside(e) { if (e.target === document.getElementById('confirmOverlay')) closeConfirm(); }
-
   function handleCta() { openConfirm(); }
 
   // ─── ENVIA LEAD PARA N8N ───────────────────────────────
@@ -893,12 +908,13 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       data:               new Date().toLocaleString('pt-BR'),
       nome:               document.getElementById('f-nome')?.value || '',
       whatsapp:           document.getElementById('f-whatsapp')?.value || '',
-      banco:              getBanco(),   // ← usa o nome real, nunca "Outro"
+      banco:              document.getElementById('f-banco')?.value || '',
       parcela:            pmt,
       parcelas_restantes: n,
       valor_emprestimo:   pv,
       taxa_calculada:     rate ? (rate * 100).toFixed(2) + '%' : 'N/A',
       resultado:          rate > THRESHOLD ? 'Acima da média' : 'Dentro da média',
+      consentimento_parceiros: 'sim',
       etapa:              'Etapa 2 — Análise completa'
     };
 
@@ -1024,14 +1040,13 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       return;
     }
 
-    // Envia etapa 1 para o N8N imediatamente
     const payload = {
-      data:               new Date().toLocaleString('pt-BR'),
-      nome:               nome.value.trim(),
-      whatsapp:           whatsapp.value.trim(),
-      etapa:              'Etapa 1 — Contato capturado',
-      banco:              '',
-      parcela:            '',
+      data:      new Date().toLocaleString('pt-BR'),
+      nome:      nome.value.trim(),
+      whatsapp:  whatsapp.value.trim(),
+      etapa:     'Etapa 1 — Contato capturado',
+      banco:     '',
+      parcela:   '',
       parcelas_restantes: '',
       valor_emprestimo:   '',
       taxa_calculada:     '',
@@ -1074,41 +1089,39 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
     inputEl.focus();
   }
 
+  function showConsentError() {
+    const wrap = document.getElementById('consent-wrap');
+    wrap.classList.add('has-error');
+    const existing = wrap.parentNode.querySelector('[data-error-for="consent"]');
+    if (existing) return;
+    const err = document.createElement('div');
+    err.className = 'field-error';
+    err.textContent = 'É necessário autorizar o compartilhamento dos seus dados para continuar.';
+    err.dataset.errorFor = 'consent';
+    wrap.parentNode.appendChild(err);
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   function clearError(inputEl) {
     inputEl.classList.remove('has-error');
     const existing = inputEl.parentNode.querySelector(`[data-error-for="${inputEl.id}"]`);
     if (existing) existing.remove();
   }
 
-  function clearAllErrors(form) {
-    form.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
-    form.querySelectorAll('.field-error').forEach(el => el.remove());
-  }
-
   // ─── SUBMIT ETAPA 2 ────────────────────────────────────
   function handleSubmit() {
-    const bancoSel  = document.getElementById('f-banco');
-    const outroEl   = document.getElementById('f-banco-outro');
-    const pvEl      = document.getElementById('f-valor');
-    const pmtEl     = document.getElementById('f-parcela');
-    const nEl       = document.getElementById('f-parcelas');
+    const pvEl    = document.getElementById('f-valor');
+    const pmtEl   = document.getElementById('f-parcela');
+    const nEl     = document.getElementById('f-parcelas');
 
     clearError(pvEl);
     clearError(pmtEl);
     clearError(nEl);
-    clearError(outroEl);
-
-    // ── Valida campo "Outro banco"
-    if (bancoSel.value === 'Outro' && !outroEl.value.trim()) {
-      showError(outroEl, 'Por favor, informe o nome do seu banco.');
-      return;
-    }
 
     const pv  = cleanNum(pvEl.value);
     const pmt = cleanNum(pmtEl.value);
     const n   = parseInt(nEl.value) || 0;
 
-    // ── Campos vazios
     if (!pv) {
       showError(pvEl, 'Informe o valor total do seu empréstimo. Ex: 12000');
       return;
@@ -1122,20 +1135,17 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       return;
     }
 
-    // ── Celular válido
     const whatsappEl = document.getElementById('f-whatsapp');
     if (!isValidPhone(whatsappEl.value)) {
       showError(whatsappEl, 'Informe um número de celular válido com DDD. Ex: (11) 99999-9999');
       return;
     }
 
-    // ── Parcela maior que o empréstimo
     if (pmt >= pv) {
       showError(pmtEl, `A parcela (${fmt(pmt)}) não pode ser maior que o valor do empréstimo (${fmt(pv)}). Verifique se preencheu os campos corretamente.`);
       return;
     }
 
-    // ── Parcela muito baixa — total não cobre o empréstimo
     const totalPago = pmt * n;
     if (totalPago < pv) {
       const pmtMinima = Math.ceil(pv / n);
@@ -1143,21 +1153,24 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       return;
     }
 
-    // ── Número de parcelas muito baixo
     if (n < 6) {
       showError(nEl, 'O Crédito do Trabalhador geralmente tem prazo mínimo de 6 meses. Verifique o número de parcelas no seu contrato.');
       return;
     }
 
-    // ── Número de parcelas muito alto
     if (n > 96) {
       showError(nEl, 'O prazo máximo do Crédito do Trabalhador é de 96 meses (8 anos). Verifique o número de parcelas no seu contrato.');
       return;
     }
 
+    // ── Valida consentimento
+    if (!consentGiven) {
+      showConsentError();
+      return;
+    }
+
     const rate = calcRate(pv, pmt, n);
 
-    // ── Taxa fora do intervalo esperado
     if (!rate || rate <= 0) {
       showError(pvEl, 'Não conseguimos calcular sua taxa. Verifique se os valores estão corretos.');
       return;
