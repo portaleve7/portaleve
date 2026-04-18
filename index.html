@@ -242,6 +242,20 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
   .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .form-privacy { text-align:center; font-size:12px; color:var(--gray); margin-top:14px; line-height:1.5; }
 
+  /* ── CAMPO "OUTRO BANCO" ─────────────────────────────── */
+  .outro-banco-wrap {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.28s ease, opacity 0.22s ease, margin-top 0.22s ease;
+    margin-top: 0;
+  }
+  .outro-banco-wrap.visible {
+    max-height: 80px;
+    opacity: 1;
+    margin-top: 10px;
+  }
+
   /* CONSENT CHECKBOX */
   .consent-wrap {
     display: flex;
@@ -695,12 +709,44 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
         <div class="step-label">Passo <strong>2 de 2</strong> — Dados do seu empréstimo</div>
         <div class="form-group">
           <label class="form-label">Banco do seu Crédito do Trabalhador / consignado CLT</label>
-          <select id="f-banco" class="form-input form-select">
+          <select id="f-banco" class="form-input form-select" onchange="handleBancoChange(this)">
             <option value="" disabled selected>Selecione o banco</option>
-            <option>Banco Pan</option><option>C6 Bank</option><option>Meu Tudo</option>
-            <option>Itaú</option><option>Santander</option><option>Banco do Brasil</option>
-            <option>Caixa Econômica Federal</option><option>Outro</option>
+            <option>321 Bank</option>
+            <option>Agibank</option>
+            <option>Banco do Brasil</option>
+            <option>Banco Mercantil do Brasil</option>
+            <option>Banco Pan</option>
+            <option>Banco Pine</option>
+            <option>Banco Votorantim</option>
+            <option>BMG</option>
+            <option>BMP Money Plus</option>
+            <option>BRP - Banco Ribeirão Preto S.A.</option>
+            <option>BTG</option>
+            <option>C6 Bank</option>
+            <option>Caixa Econômica Federal</option>
+            <option>Creditas</option>
+            <option>Credifit</option>
+            <option>Digi Mais</option>
+            <option>Digio</option>
+            <option>Facta</option>
+            <option>Inter</option>
+            <option>Itaú</option>
+            <option>Mercantil</option>
+            <option>Meu Tudo</option>
+            <option>Neon</option>
+            <option>Paketa Serviços de Crédito Anônimo</option>
+            <option>PicPay</option>
+            <option>QI Sociedade de Crédito</option>
+            <option>Safra</option>
+            <option>Santander</option>
+            <option>UP.P</option>
+            <option>Zipdin Soluções</option>
+            <option value="Outro">Outro</option>
           </select>
+          <!-- campo condicional "Outro banco" -->
+          <div class="outro-banco-wrap" id="outro-banco-wrap">
+            <input id="f-banco-outro" type="text" class="form-input" placeholder="Qual banco?" maxlength="80" autocomplete="off">
+          </div>
         </div>
         <div class="form-row" style="grid-template-columns:1fr 1fr 1fr">
           <div class="form-group"><label class="form-label">Valor do empréstimo</label><input id="f-valor" type="text" class="form-input" placeholder="R$ 0" oninput="maskCurrency(this)"></div>
@@ -708,7 +754,7 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
           <div class="form-group"><label class="form-label">Nº de parcelas</label><input id="f-parcelas" type="number" class="form-input" placeholder="Ex: 36" min="1" max="96"></div>
         </div>
 
-        <!-- ✅ CONSENTIMENTO LGPD -->
+        <!-- CONSENTIMENTO LGPD -->
         <div class="consent-wrap" id="consent-wrap" onclick="toggleConsent()">
           <div class="consent-checkbox" id="consent-checkbox">
             <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
@@ -809,6 +855,31 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
 </footer>
 
 <script>
+  // ─── BANCO: campo "Outro" condicional ──────────────────
+  function handleBancoChange(sel) {
+    const wrap = document.getElementById('outro-banco-wrap');
+    const input = document.getElementById('f-banco-outro');
+    if (sel.value === 'Outro') {
+      wrap.classList.add('visible');
+      // pequeno delay para o foco depois da transição iniciar
+      setTimeout(() => input.focus(), 50);
+    } else {
+      wrap.classList.remove('visible');
+      input.value = '';
+    }
+    // limpa erro do select se existir
+    clearError(sel);
+  }
+
+  // Retorna o valor correto do banco para envio
+  function getBanco() {
+    const sel = document.getElementById('f-banco');
+    if (sel.value === 'Outro') {
+      return document.getElementById('f-banco-outro').value.trim() || 'Outro';
+    }
+    return sel.value;
+  }
+
   // ─── CONSENTIMENTO ─────────────────────────────────────
   let consentGiven = false;
 
@@ -908,7 +979,7 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       data:               new Date().toLocaleString('pt-BR'),
       nome:               document.getElementById('f-nome')?.value || '',
       whatsapp:           document.getElementById('f-whatsapp')?.value || '',
-      banco:              document.getElementById('f-banco')?.value || '',
+      banco:              getBanco(),   // ← usa a função que resolve "Outro"
       parcela:            pmt,
       parcelas_restantes: n,
       valor_emprestimo:   pv,
@@ -1110,13 +1181,27 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
 
   // ─── SUBMIT ETAPA 2 ────────────────────────────────────
   function handleSubmit() {
-    const pvEl    = document.getElementById('f-valor');
-    const pmtEl   = document.getElementById('f-parcela');
-    const nEl     = document.getElementById('f-parcelas');
+    const bancoEl  = document.getElementById('f-banco');
+    const pvEl     = document.getElementById('f-valor');
+    const pmtEl    = document.getElementById('f-parcela');
+    const nEl      = document.getElementById('f-parcelas');
+    const outroEl  = document.getElementById('f-banco-outro');
 
     clearError(pvEl);
     clearError(pmtEl);
     clearError(nEl);
+
+    // Valida banco selecionado
+    if (!bancoEl.value) {
+      showError(bancoEl, 'Selecione o banco do seu contrato.');
+      return;
+    }
+
+    // Se escolheu "Outro", valida o campo de texto
+    if (bancoEl.value === 'Outro' && !outroEl.value.trim()) {
+      showError(outroEl, 'Informe o nome do banco.');
+      return;
+    }
 
     const pv  = cleanNum(pvEl.value);
     const pmt = cleanNum(pmtEl.value);
@@ -1163,7 +1248,6 @@ src="https://www.facebook.com/tr?id=1638609854140783&ev=PageView&noscript=1"
       return;
     }
 
-    // ── Valida consentimento
     if (!consentGiven) {
       showConsentError();
       return;
